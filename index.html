@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Каркасний дуплекс — 3D проєкт · 13,00 × 6,92 м</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#231F20;
+  --paper:#ffffff;
+  --line:#e4e1da;
+  --mut:#8b8880;
+  --soft:#f6f4ef;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'IBM Plex Mono','Courier New',monospace;
+  color:var(--ink);background:var(--paper);
+  font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--ink);color:#fff}
+
+/* ---------- sidebar ---------- */
+#sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:292px;z-index:20;
+  background:var(--paper);border-right:1px solid var(--line);
+  padding:30px 26px 40px;overflow-y:auto;scrollbar-width:none;
+  display:flex;flex-direction:column;gap:26px;
+}
+#sidebar::-webkit-scrollbar{width:0}
+.sq{display:grid;grid-template-columns:repeat(3,5px);grid-auto-rows:5px;gap:4px;width:max-content}
+.sq i{background:var(--ink);display:block}
+.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+h1{font-size:19px;font-weight:600;letter-spacing:.02em;line-height:1.3;text-transform:uppercase}
+.side-meta{display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--line);padding-top:14px}
+.side-meta .row{display:flex;justify-content:space-between;gap:12px;font-size:12px}
+.side-meta .row b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.side-meta .row span{color:var(--mut);letter-spacing:.08em;text-transform:uppercase;font-size:10.5px;padding-top:1px}
+.side-sec{display:flex;flex-direction:column;gap:9px}
+.side-sec>h2{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);font-weight:500;border-top:1px solid var(--line);padding-top:14px}
+.rbtn{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:8px 10px;border:1px solid var(--line);background:#fff;cursor:pointer;
+  font:inherit;font-size:12.5px;text-align:left;color:var(--ink);
+  transition:background .18s ease,color .18s ease,border-color .18s ease;
+}
+.rbtn em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--mut);font-size:11.5px;white-space:nowrap}
+.rbtn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rbtn:hover em{color:#bdbab2}
+.rbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rbtn.on em{color:#bdbab2}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{
+  flex:1;padding:7px 0;background:#fff;border:0;border-right:1px solid var(--line);
+  font:inherit;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:var(--ink);
+  transition:background .15s ease,color .15s ease;
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--soft)}
+.seg button.on{background:var(--ink);color:#fff}
+.chk{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12.5px;user-select:none}
+.chk input{appearance:none;width:14px;height:14px;border:1px solid var(--ink);background:#fff;cursor:pointer;flex:none;position:relative;top:-1px}
+.chk input:checked{background:var(--ink)}
+.side-note{font-size:11px;color:var(--mut);line-height:1.6}
+.side-foot{margin-top:auto;font-size:10.5px;color:var(--mut);letter-spacing:.06em;line-height:1.7;border-top:1px solid var(--line);padding-top:14px}
+
+/* ---------- hero / canvas ---------- */
+main{margin-left:292px}
+#hero{position:relative;height:100vh;min-height:560px;border-bottom:1px solid var(--line);background:#eceae4}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#planwrap{
+  position:absolute;inset:0;background:#fff;display:none;overflow:auto;
+  align-items:center;justify-content:center;padding:24px;
+}
+#planwrap.show{display:flex}
+#planwrap svg{max-width:100%;max-height:100%;width:auto;height:auto}
+#labels{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.lbl{
+  position:absolute;transform:translate(-50%,-120%);pointer-events:auto;cursor:pointer;
+  background:#fff;border:1px solid var(--ink);padding:4px 8px 3px;
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  transition:background .15s ease,color .15s ease;
+}
+.lbl b{font-weight:600}
+.lbl em{font-style:normal;color:var(--mut);font-variant-numeric:tabular-nums}
+.lbl:hover,.lbl.on{background:var(--ink);color:#fff}
+.lbl:hover em,.lbl.on em{color:#bdbab2}
+.lbl::after{
+  content:"";position:absolute;left:50%;bottom:-5px;width:7px;height:7px;background:inherit;
+  border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);
+  transform:translateX(-50%) rotate(45deg);
+}
+.hud{position:absolute;display:flex;gap:8px;z-index:5;flex-wrap:wrap}
+.hud.tl{top:16px;left:16px}
+.hud.tr{top:16px;right:16px;justify-content:flex-end}
+.hud.bl{bottom:16px;left:16px}
+.cbtn{
+  background:rgba(35,31,32,.45);color:#fff;border:0;cursor:pointer;
+  font:inherit;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  padding:8px 13px;backdrop-filter:blur(4px);transition:background .15s ease;
+}
+.cbtn:hover{background:rgba(35,31,32,.8)}
+.cbtn.on{background:var(--ink)}
+#hint{
+  position:absolute;bottom:16px;right:16px;z-index:5;font-size:10.5px;letter-spacing:.08em;
+  color:rgba(35,31,32,.55);text-transform:uppercase;text-align:right;pointer-events:none;
+}
+body.clean aside,body.clean .hud,body.clean #labels,body.clean #hint{display:none!important}
+body.clean main{margin-left:0}
+#loader{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;
+  background:#eceae4;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);
+  transition:opacity .5s ease;
+}
+#loader.off{opacity:0;pointer-events:none}
+
+/* ---------- content ---------- */
+section.blk{padding:88px 6vw 72px;border-bottom:1px solid var(--line)}
+.blk-head{display:grid;grid-template-columns:44px 1fr;gap:22px;align-items:start;margin-bottom:44px}
+.blk-head h2{font-size:17px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.blk-head p{grid-column:2;color:var(--mut);font-size:12.5px;max-width:640px;margin-top:-30px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line)}
+.cols3>.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 22px}
+.cols3>.cell:nth-child(3n){border-right:0}
+.kv{display:flex;flex-direction:column;gap:4px}
+.kv small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.kv b{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+table.spec{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.spec th{
+  text-align:left;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);
+  font-weight:500;padding:10px 12px;border-bottom:1px solid var(--ink);
+}
+table.spec td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+table.spec tr:hover td{background:var(--soft)}
+.tot td{border-bottom:0;border-top:1px solid var(--ink);font-weight:600;background:#fff}
+ul.tech{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line)}
+ul.tech li{border-bottom:1px solid var(--line);padding:14px 18px 14px 34px;position:relative;font-size:12.5px}
+ul.tech li:nth-child(odd){border-right:1px solid var(--line)}
+ul.tech li::before{content:"";position:absolute;left:16px;top:20px;width:6px;height:6px;background:var(--ink)}
+
+.materials-note{font-size:12px;color:var(--mut);margin:18px 0;line-height:1.7}
+.materials-download{margin:18px 0;font-size:12px}
+.materials-download a{color:var(--ink);text-underline-offset:4px}
+.materials-scroll{overflow-x:auto}
+.materials-table{min-width:740px}
+.materials-table tbody th{font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);font-size:12px;border-bottom:1px solid var(--line);vertical-align:top;min-width:190px}
+.materials-table small{display:block;color:var(--mut);font-size:10px;margin-top:5px}
+.materials-table td{font-size:12px}
+.materials-table td:nth-child(n+2):nth-child(-n+5){white-space:nowrap}
+.materials-table td:last-child{min-width:220px}
+.materials-method{margin:24px 0;font-size:12px}
+.materials-method summary{cursor:pointer;font-weight:600}
+.materials-method ul{padding-left:20px;margin:16px 0}
+.materials-method li{margin:8px 0}
+.materials-method p{color:var(--mut);line-height:1.7}
+
+/* ---------- gallery ---------- */
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--line);border:1px solid var(--line)}
+.gal figure{background:#fff;position:relative}
+.gal figure.full{grid-column:1/-1}
+.gal img{width:100%;height:auto;display:block;filter:saturate(.96)}
+.gal figure.pair img{aspect-ratio:4/3;object-fit:cover}
+.gal figcaption{
+  display:flex;justify-content:space-between;gap:14px;padding:13px 16px;border-top:1px solid var(--line);
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+}
+.gal figcaption em{font-style:normal;color:var(--mut);font-variant-numeric:tabular-nums;text-align:right}
+footer{padding:56px 6vw 64px;display:flex;flex-direction:column;gap:22px}
+footer .frow{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+footer .frow b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  #sidebar{
+    position:static;width:100%;border-right:0;border-bottom:1px solid var(--line);
+    flex-direction:column;max-height:none;
+  }
+  main{margin-left:0}
+  #hero{height:72vh}
+  .cols3{grid-template-columns:1fr}
+  .cols3>.cell{border-right:0}
+  ul.tech{grid-template-columns:1fr}
+  ul.tech li:nth-child(odd){border-right:0}
+  .gal{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div>
+    <div class="kicker">Робочий проєкт · правка 05.09.2026</div>
+    <h1>Каркасний дуплекс</h1>
+  </div>
+  <div class="side-meta">
+    <div class="row"><span>Габарит</span><b>13,00 × 6,92 м</b></div>
+    <div class="row"><span>Секції</span><b>А + Б · дзеркальні</b></div>
+    <div class="row"><span>Висота в чистоті</span><b>2,70 м</b></div>
+    <div class="row"><span>Площа в чистоті</span><b>53,92 м²</b></div>
+    <div class="row"><span>Тераси</span><b>2 × 13,00 м²</b></div>
+  </div>
+
+  <div class="side-sec">
+    <h2>Приміщення — вигляд всередині</h2>
+    <button class="rbtn" data-view="kitchen">Кухня <em>8,99 м²</em></button>
+    <button class="rbtn" data-view="hall">Прихожа <em>5,70 м²</em></button>
+    <button class="rbtn" data-view="room">Кімната <em>7,56 м²</em></button>
+    <button class="rbtn" data-view="bath">Санвузол <em>4,71 м²</em></button>
+    <button class="rbtn" data-view="terrace">Тераса <em>13,00 м²</em></button>
+    <button class="rbtn" data-view="overview">Загальний огляд <em>360°</em></button>
+  </div>
+
+  <div class="side-sec">
+    <h2>Секція</h2>
+    <div class="seg" id="segSec">
+      <button data-sec="both" class="on">Обидві</button>
+      <button data-sec="a">А</button>
+      <button data-sec="b">Б</button>
+    </div>
+  </div>
+
+  <div class="side-sec">
+    <h2>Шари моделі</h2>
+    <label class="chk"><input type="checkbox" id="chkRoof"> Показати дах</label>
+    <label class="chk"><input type="checkbox" id="chkClip"> Зріз стін (1,35 м)</label>
+    <label class="chk"><input type="checkbox" id="chkSpin"> Автообертання</label>
+    <label class="chk"><input type="checkbox" id="chkHouseOnly"> Тільки будинок</label>
+  </div>
+
+  <div class="side-note">
+    Вхід — з тераси через Д-1 у прихожу: лавка, гачки, дзеркало, взуттєва тумба; проходи вільні. Кухня відкрита до прихожої: робоча стіна 2,0 м уздовж західного торця (мокрий контур), мийка біля вікна В-1, стіл на чотирьох. Кімната — у глибині секції за дверима Д-2: ліжко 1600 під вікном В-3, шафа-купе та картина. Санвузол суміжний із кухнею — вся сантехніка на західному стояку.
+  </div>
+
+  <div class="side-foot">
+    Аркуш 1–2 · стадія: робочий проєкт<br>
+    Стіна зовнішня 200 мм · міжсекційна 200 мм · перегородки 100 мм
+  </div>
+</aside>
+
+<main>
+  <div id="hero">
+    <canvas id="scene"></canvas>
+    <div id="planwrap"><svg id="plan" role="img" aria-label="План дуплекса"></svg></div>
+    <div class="hud tl">
+      <button class="cbtn on" id="m3d">3D огляд</button>
+      <button class="cbtn" id="mplan">План 2D</button>
+      <button class="cbtn" id="mhouseplan">План 2D будинку</button>
+    </div>
+    <div class="hud tr">
+      <button class="cbtn" data-view="overview">Огляд</button>
+      <button class="cbtn" data-view="top">Зверху</button>
+      <button class="cbtn" data-view="terrace">Фасад</button>
+    </div>
+    <div id="loader">завантаження моделі…</div>
+    <div id="hint">обертання — ліва кнопка · масштаб — коліщатко</div>
+  </div>
+
+  <section class="blk" id="expl">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>01 / Експлікація приміщень</h2>
+      <p>Одна секція. Секції А і Б — дзеркальні; показники будинку загалом — подвійні.</p>
+    </div>
+    <table class="spec">
+      <thead><tr><th>№</th><th>Приміщення</th><th>Розмір, м</th><th>Площа, м²</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Кухня</td><td>3,10 × 2,90</td><td>8,99</td></tr>
+        <tr><td>2</td><td>Прихожа</td><td>3,00 × 1,90</td><td>5,70</td></tr>
+        <tr><td>3</td><td>Кімната</td><td>3,00 × 2,52</td><td>7,56</td></tr>
+        <tr><td>4</td><td>Санвузол</td><td>3,10 × 1,52</td><td>4,71</td></tr>
+        <tr class="tot"><td>—</td><td>Разом у чистоті (секція)</td><td></td><td>26,96</td></tr>
+        <tr><td>—</td><td>Габаритна площа секції (без тераси)</td><td>6,50 × 4,92</td><td>31,98</td></tr>
+        <tr><td>—</td><td>Тераса, не опалювана</td><td>6,50 × 2,00</td><td>13,00</td></tr>
+        <tr class="tot"><td>—</td><td>Будинок загалом: чистота / габарит / тераси</td><td></td><td>53,92 / 63,96 / 26,00</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="blk" id="renders">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>02 / Візуалізації</h2>
+      <p>Фотореалістичні візуалізації затвердженого фасаду, всієї ділянки та інтер'єрів однієї секції: два ракурси прихожої з кухнею, спальня й санвузол.</p>
+    </div>
+    <div class="gal">
+      <figure class="full">
+        <img src="assets/visual-facade.png" alt="Головний фасад одноповерхового дуплекса з накритою терасою" loading="lazy">
+        <figcaption><span>Головний фасад · накрита тераса на всю довжину</span><em>затверджений дизайн</em></figcaption>
+      </figure>
+      <figure class="full">
+        <img src="assets/visual-site-aerial.png" alt="Дуплекс на ділянці з парковкою, проїздом і двома зонами барбекю" loading="lazy">
+        <figcaption><span>Ділянка · будинок, парковка та дві BBQ-зони</span><em>вид зверху</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-hall-kitchen.png" alt="Світла прихожа, відкрита до кухні та обідньої зони" loading="lazy">
+        <figcaption><span>Прихожа та кухня · єдиний світлий простір</span><em>5,70 + 8,99 м²</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-bedroom.png" alt="Спальня з ліжком під вікном і шафою-купе" loading="lazy">
+        <figcaption><span>Спальня · ліжко 1600 під вікном і шафа-купе</span><em>7,56 м²</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-kitchen-to-hall.png" alt="Вигляд із кухні на прихожу, вхід і терасу" loading="lazy">
+        <figcaption><span>Кухня → прихожа · вхід і вихід на терасу</span><em>зворотний ракурс</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-bathroom.png" alt="Санвузол із душовою, унітазом, умивальником і пральною машиною" loading="lazy">
+        <figcaption><span>Санвузол · душова, унітаз, умивальник і пральна машина</span><em>4,71 м²</em></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="blk" id="spec">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>03 / Специфікація прорізів</h2>
+      <p>Одна секція. Кухня відкрита до прихожої — без дверей; двері тільки у кімнату та санвузол.</p>
+    </div>
+    <table class="spec">
+      <thead><tr><th>Поз.</th><th>Розмір, мм</th><th>Приміщення / призначення</th><th>К-ть</th></tr></thead>
+      <tbody>
+        <tr><td>Д-1</td><td>800 × 2050</td><td>Вхідні з тераси в прихожу, відкривання назовні</td><td>1</td></tr>
+        <tr><td>Д-2</td><td>800 × 2050</td><td>Кімната, вхід з прихожої, відкривання в прихожу</td><td>1</td></tr>
+        <tr><td>Д-3</td><td>800 × 2050</td><td>Санвузол, вхід з кухні, відкривання в санвузол</td><td>1</td></tr>
+        <tr><td>В-1</td><td>2400 × 2360</td><td>Кухня, скління до підлоги за затвердженим дизайном</td><td>1</td></tr>
+        <tr><td>В-2</td><td>800 × 600</td><td>Санвузол, тильний фасад</td><td>1</td></tr>
+        <tr><td>В-3</td><td>1200 × 1000</td><td>Кімната, тильний фасад</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="blk" id="finishes">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>04 / Специфікація оздоблення</h2>
+      <p>За затвердженим візуальним рішенням. Наведені матеріали — рекомендовані до підбору; виробники, точні відтінки та характеристики погоджуються за зразками перед замовленням.</p>
+    </div>
+    <ul class="tech">
+      <li><b>Фасад.</b> Горизонтальне облицювання теплого білого кольору, матове; рекомендований матеріал — фасадна фіброцементна дошка. Навколо обох входів — однакові вертикальні дерев’яні панелі у відтінку світлого дуба із захисним покриттям для зовнішніх робіт.</li>
+      <li><b>Дах і накриття тераси.</b> Фальцева сталева покрівля з матовим графітовим покриттям. Планки, жолоби та водостічні труби — у тому самому кольорі. Товщину металу й систему покриття обрати за специфікацією виробника та конструктивним рішенням.</li>
+      <li><b>Вікна.</b> Графітові рами в тон покрівлі, енергоощадні склопакети. Кількість, розміри й розташування — за специфікацією прорізів. Матеріал профілю, формулу склопакета, безпечне скління до підлоги та схеми відкривання уточнити при підборі.</li>
+      <li><b>Двері.</b> Вхідні — утеплені, матові графітові, з вузькою вертикальною скляною вставкою; відкривання назовні. Міжкімнатні — гладкі, теплого білого кольору, з чорними ручками. Двері спальні відкриваються в прихожу, санвузла — у санвузол.</li>
+      <li><b>Настил тераси.</b> Натуральна дерев’яна терасна дошка світлого теплого відтінку, матове олійне покриття для зовнішніх робіт. Рекомендована порода — модрина або термодеревина. Сходи — з того самого матеріалу; монтажні зазори та кріплення — за системою виробника.</li>
+    </ul>
+  </section>
+
+  <section class="blk" id="materials">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>05 / Попередня відомість матеріалів</h2>
+      <p>На весь дуплекс і благоустрій за поточною моделлю · 06.09.2026. Кількості придатні для попереднього запиту цін. Остаточне замовлення — після замірів і розкрою обраних матеріалів.</p>
+    </div>
+    <p class="materials-note">У колонці «Із запасом» враховано умовні 10 % для оздоблення, покрівлі та деревини; 5 % для бруківки, профнастилу й водостоків. Це попереднє припущення для оцінки обсягів. Штучні вироби наведено без запасу. Рядки з різними одиницями не підсумовуються.</p>
+    <p class="materials-download"><a href="assets/materials-quantities.csv" download>Завантажити таблицю CSV для Excel</a></p>
+    <div class="materials-scroll" role="region" aria-label="Попередня відомість матеріалів — таблицю можна прокручувати горизонтально" tabindex="0">
+      <table class="spec materials-table">
+        <thead><tr><th scope="col">Матеріал / виріб</th><th scope="col">Од.</th><th scope="col">Без запасу</th><th scope="col">Запас</th><th scope="col">Із запасом</th><th scope="col">Примітка</th></tr></thead>
+        <tbody>
+        <tr><th scope="row">Біле фасадне облицювання<small>Фасад</small></th><td>м²</td><td>73,44</td><td>10 %</td><td>80,78</td><td>Вертикальні стіни до карниза; без прорізів, дерев’яних вставок і фронтонів.</td></tr>
+        <tr><th scope="row">Дерев’яні вставки біля двох входів<small>Фасад</small></th><td>м²</td><td>5,36</td><td>10 %</td><td>5,90</td><td>Площа двох зон 1,60 × 2,70 м із вирахуванням дверей.</td></tr>
+        <tr><th scope="row">Оздоблення двох фронтонів<small>Фасад</small></th><td>м²</td><td>8,86</td><td>10 %</td><td>9,74</td><td>Окремо від стін і схилів даху; матеріал оздоблення уточнити.</td></tr>
+        <tr><th scope="row">Фальцева покрівля основного даху<small>Покрівля</small></th><td>м²</td><td>96,31</td><td>10 %</td><td>105,94</td><td>Два схили зі звисами; без фронтонів і добірних планок.</td></tr>
+        <tr><th scope="row">Фальцева покрівля накриття тераси<small>Покрівля</small></th><td>м²</td><td>31,05</td><td>10 %</td><td>34,15</td><td>Похила площа зі звисами; без підшивки та опор.</td></tr>
+        <tr><th scope="row">Дерев’яний настил двох терас<small>Тераси</small></th><td>м²</td><td>26,00</td><td>10 %</td><td>28,60</td><td>По 13,00 м² на секцію; без лаг, кріплень і торцевого оздоблення.</td></tr>
+        <tr><th scope="row">Дерев’яні проступи сходів<small>Тераси</small></th><td>м²</td><td>0,88</td><td>10 %</td><td>0,97</td><td>Лише відкриті горизонтальні поверхні; без підсходинок і перекриття настилом тераси.</td></tr>
+        <tr><th scope="row">Бруківка: парковка, проїзд і дві BBQ-зони<small>Благоустрій</small></th><td>м²</td><td>120,30</td><td>5 %</td><td>126,31</td><td>Парковка 32,214 м²; проїзд 78,8822 м²; BBQ 9,20 м². Без основи й бордюрів.</td></tr>
+        <tr><th scope="row">Довжина паркану без воріт<small>Огорожа</small></th><td>пог. м</td><td>108,63</td><td>—</td><td>108,63</td><td>Усі відрізки ступінчастої межі. Запас на довжину межі не додається.</td></tr>
+        <tr><th scope="row">Профнастил паркану висотою 1,80 м<small>Огорожа</small></th><td>м²</td><td>195,53</td><td>5 %</td><td>205,31</td><td>Площа заповнення одного боку; без воріт, стовпів і поперечин. Листи підбирати за корисною шириною.</td></tr>
+        <tr><th scope="row">Двостулкові в’їзні ворота<small>Огорожа</small></th><td>компл.</td><td>1</td><td>—</td><td>1</td><td>Проріз 2,63 м; розміри стулок та фурнітура — після заміру.</td></tr>
+        <tr><th scope="row">Жолоб накриття тераси<small>Водостоки</small></th><td>пог. м</td><td>13,50</td><td>5 %</td><td>14,18</td><td>Лише змодельована передня лінія тераси; без основного даху та фасонних деталей.</td></tr>
+        <tr><th scope="row">Водостічні труби накриття тераси<small>Водостоки</small></th><td>пог. м</td><td>4,96</td><td>5 %</td><td>5,21</td><td>Дві труби по 2,48 м; без колін, воронок і відведення води по ділянці.</td></tr>
+        <tr><th scope="row">В-1 — фасадне скління 2400 × 2360 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>По одному на секцію; розміри за специфікацією, схеми відкривання уточнити.</td></tr>
+        <tr><th scope="row">В-2 — вікна санвузлів 800 × 600 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>По одному на секцію.</td></tr>
+        <tr><th scope="row">В-3 — вікна спалень 1200 × 1000 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>По одному на секцію.</td></tr>
+        <tr><th scope="row">Д-1 — вхідні двері 800 × 2050 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>Графітові, зі скляною вставкою; відкривання назовні.</td></tr>
+        <tr><th scope="row">Д-2 — двері спалень 800 × 2050 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>Відкривання в прихожу.</td></tr>
+        <tr><th scope="row">Д-3 — двері санвузлів 800 × 2050 мм<small>Прорізи</small></th><td>шт.</td><td>2</td><td>—</td><td>2</td><td>Відкривання у санвузол.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="materials-method">
+      <summary>Як пораховані кількості</summary>
+      <ul>
+        <li><b>Біле фасадне облицювання:</b> 2 × (13 + 4,92) × 2,70 − 17,968 − 5,36 = 73,44 м².</li>
+        <li><b>Дерев’яні вставки біля двох входів:</b> 2 × (1,60 × 2,70 − 0,80 × 2,05) = 5,36 м².</li>
+        <li><b>Оздоблення двох фронтонів:</b> 2 × 0,5 × 4,92 × 1,80 = 8,86 м².</li>
+        <li><b>Фальцева покрівля основного даху:</b> 2 × 13,90 × √(2,91² + 1,88²) = 96,31 м².</li>
+        <li><b>Фальцева покрівля накриття тераси:</b> 13,40 × √(2,30² + 0,28²) = 31,05 м².</li>
+        <li><b>Дерев’яний настил двох терас:</b> 2 × 6,50 × 2,00 = 26,00 м².</li>
+        <li><b>Дерев’яні проступи сходів:</b> 2 × 1,10 × (0,20 + 0,20) = 0,88 м².</li>
+        <li><b>Бруківка: парковка, проїзд і дві BBQ-зони:</b> 5,46 × 5,90 + 2,63 × 13,60 + 3,62 × 11,91 + 2 × 1,84 × 2,50 = 120,30 м².</li>
+        <li><b>Довжина паркану без воріт:</b> 2 × (15,20 + 40,43) − 2,63 = 108,63 пог. м.</li>
+        <li><b>Профнастил паркану висотою 1,80 м:</b> 108,63 × 1,80 = 195,53 м².</li>
+        <li><b>Двостулкові в’їзні ворота:</b> 1 комплект на в’їзд = 1,00 компл..</li>
+        <li><b>Жолоб накриття тераси:</b> 13,50 = 13,50 пог. м.</li>
+        <li><b>Водостічні труби накриття тераси:</b> 2 × 2,48 = 4,96 пог. м.</li>
+      </ul>
+      <p>Площа фасаду — геометрична площа поверхонь, а не сума вузьких дощок у 3D-відображенні; дрібні декоративні шви не віднімаються. Укоси, підшивка звисів, добірні елементи й кріплення не включені. Покрівля порахована за довжиною схилів, а не за горизонтальною проєкцією.</p>
+    </details>
+    <p class="materials-note">Не включено: фундамент, прихований каркас, утеплення, інженерію, основу мощення, лаги тераси, стовпи та поперечини паркану. Водостоки наведені лише для накриття тераси; схема основного даху ще не визначена. Прорізи наведено за проєктом — виробничі розміри вікон і дверей уточнюються заміром.</p>
+  </section>
+
+  <section class="blk" id="tech">
+    <div class="blk-head">
+      <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2>06 / Технічні дані</h2>
+      <p>Конструктив та інженерія за робочим проєктом; планувальне рішення — кухня при вході, кімната у глибині.</p>
+    </div>
+    <ul class="tech">
+      <li>Зовнішні стіни 200 мм: каркас 150 мм, обшивка та фасадна система, крок стійок 600 мм.</li>
+      <li>Міжсекційна стіна 200 мм: два незалежні каркаси з розривом, звукоізоляція, по два шари обшивки.</li>
+      <li>Внутрішні перегородки 100 мм; перегородка санвузол/кімната — звукоізоляційна.</li>
+      <li>Висота приміщень у чистоті — 2,70 м.</li>
+      <li>Санвузол: душова кабіна 900×900, унітаз під вікном В-2, умивальник і пральна машина — вся сантехніка на тильній стіні.</li>
+      <li>Бойлер 80 л — настінний, у санвузлі над пральною машиною; там само колектор і вузол обліку води.</li>
+      <li>Стояк каналізації та вентканал — у західній частині секції, спільні для санвузла й кухні.</li>
+      <li>Кухонна стіна 2000 мм уздовж західного торця, мийка біля вікна В-1, варильна поверхня та витяжка.</li>
+      <li>Тераса 6,50 × 2,00 м на секцію: спільне суцільне накриття по всій ширині фасаду 13,00 м, на п'яти стійках. Окремі козирки над дверима прибрано.</li>
+      <li>Паркан із чорного профнастилю h = 1,8 м — по межі ділянки 15,2 × 40,43 м: права сторона від в’їзду пряма, ліва — східцями (4,53 / 1,59 / 5,46 / 0,99 м) до шии 2,63 × 13,60 м; з боку вулиці — розпашні ворота 2,63 м.</li>
+      <li>Парковка 5,46 × 5,90 м на два авто з твердим покриттям у середньому уступі ділянки; в'їзд із твердим покриттям уздовж правої межі від воріт.</li>
+      <li>Перемички над прорізами Д-1…Д-3, В-1…В-3 — за розрахунком конструктора.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="frow">
+      <span>Каркасний дуплекс · одноповерховий</span>
+      <span>Загалом по будинку — <b>53,92 м²</b> у чистоті · <b>63,96 м²</b> габарит · <b>26,00 м²</b> терас</span>
+    </div>
+  </footer>
+</main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+if (location.search.includes('clean')) document.body.classList.add('clean');
+
+/* ================= renderer / scene ================= */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.06;
+renderer.localClippingEnabled = true;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeceae4);
+
+// План PDF: +x праворуч, будинок угорі, ворота внизу.
+// Вихідні креслярські координати мають +z до тилу; у Three.js
+// відображаємо їх як -z, узгоджено з SVG-планом (Y = 492 - z).
+const model = new THREE.Group();
+model.scale.z = -1;
+scene.add(model);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.05, 220);
+camera.position.set(25, 18, 26);
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(5.5, 0, 7);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 1.0;
+controls.maxDistance = 70;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xcfc8b8, 0.95));
+const sun = new THREE.DirectionalLight(0xfff2df, 2.3);
+sun.position.set(15, 21, 12);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -40; sun.shadow.camera.right = 40;
+sun.shadow.camera.top = 40;  sun.shadow.camera.bottom = -40;
+sun.shadow.camera.near = 2;  sun.shadow.camera.far = 95;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.018;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdfe8ff, 0.45);
+fill.position.set(-10, 8, -14);
+scene.add(fill);
+
+/* ================= materials ================= */
+const wallMats = [];
+function std(color, rough=0.9, metal=0, clip=false, extra={}){
+  const m = new THREE.MeshStandardMaterial({color, roughness:rough, metalness:metal, ...extra});
+  if (clip) wallMats.push(m);
+  return m;
+}
+const mExt     = std(0xf4f1ea, 0.95, 0, true);          // зовнішні стіни
+const mInt     = std(0xece8e0, 0.95, 0, true);          // перегородки
+const mFrame   = std(0x2c2a28, 0.6,  0, true);          // віконні рами
+const mGlass   = new THREE.MeshPhysicalMaterial({color:0xcfe4ea, roughness:0.06, metalness:0, transparent:true, opacity:0.28, depthWrite:false});
+wallMats.push(mGlass);
+const mDoor    = std(0x303338, 0.65, 0.12, true);
+const mClad    = std(0xe8e5df, 0.85, 0, true);
+const mTimber  = std(0xb77e49, 0.8, 0, true);
+const mDoorIn  = std(0xd9d2c4, 0.8,  0, true);
+const mRoof    = std(0x3a3d42, 0.65, 0.15);
+const mSlab    = std(0xb9b6ae, 0.95);
+const mGrass   = std(0xa9b295, 1.0);
+const mDeck    = std(0xa37c52, 0.85);
+const mWoodF   = std(0xc8a576, 0.75);
+const mTile    = std(0xc9ccce, 0.5);
+const mOak     = std(0xc49a68, 0.7);
+const mWhite   = std(0xf3f1ec, 0.85);
+const mGrey    = std(0x9aa0a6, 0.95);
+const mSofa    = std(0x878d94, 0.95);
+const mDark    = std(0x38363a, 0.5, 0.2);
+const mLinen   = std(0xe7dfd2, 0.95);
+const mMatr    = std(0xf5f2ea, 0.95);
+const mRug     = std(0xd8d2c6, 1.0);
+const mCeram   = std(0xf6f6f4, 0.35);
+const mWater   = std(0xa9ccd2, 0.2);
+const mMirror  = std(0xe2eaee, 0.06, 0.0);
+const mMetal   = std(0xbebebe, 0.35, 0.8);
+const mPlant   = std(0x6f8f5f, 0.9);
+const mPot     = std(0xb06a4a, 0.9);
+const mCounter = std(0xdedbd3, 0.4);
+function artMaterial(){
+  const c=document.createElement('canvas');c.width=512;c.height=384;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#e9e1d4';ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#b98258';ctx.beginPath();ctx.ellipse(160,205,118,88,-.35,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#d2b99d';ctx.beginPath();ctx.ellipse(344,122,108,74,.38,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#4b4a46';ctx.beginPath();ctx.moveTo(268,70);ctx.lineTo(399,279);ctx.lineTo(236,316);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(76,307);ctx.bezierCurveTo(176,126,306,331,452,75);ctx.stroke();
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  return std(0xffffff,.92,0,false,{map:t});
+}
+const mArt=artMaterial();
+// Seeded surface textures repeat in metres, independent of each slab's size.
+function landscapeTexture(kind){
+  const c=document.createElement('canvas');c.width=c.height=512;
+  const ctx=c.getContext('2d');let seed=317;
+  const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+  if(kind==='grass'){
+    ctx.fillStyle='#687b46';ctx.fillRect(0,0,512,512);
+    for(let i=0;i<36000;i++){
+      const x=rand()*512,y=rand()*512,v=Math.floor(rand()*45);
+      ctx.strokeStyle=`rgba(${65+v},${82+v},${34+v/2},0.55)`;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(rand()-.5)*4,y-2-rand()*6);ctx.stroke();
+    }
+  }else{
+    ctx.fillStyle='#666969';ctx.fillRect(0,0,512,512);
+    for(let row=0;row<8;row++) for(let col=-1;col<4;col++){
+      const x=col*128+(row%2)*64,y=row*64,v=151+Math.floor(rand()*27);
+      ctx.fillStyle=`rgb(${v},${v+1},${v})`;ctx.fillRect(x+2,y+2,124,60);
+      ctx.strokeStyle='rgba(235,235,226,.45)';ctx.strokeRect(x+3,y+3,122,58);
+    }
+    for(let i=0;i<22000;i++){
+      ctx.fillStyle=rand()>.5?'rgba(255,255,255,.07)':'rgba(0,0,0,.08)';
+      ctx.fillRect(rand()*512,rand()*512,1,1);
+    }
+  }
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
+}
+mGrass.color.set(0xffffff);mGrass.map=landscapeTexture('grass');mGrass.userData.worldScale=.5;
+const mPave=std(0xffffff,.94);mPave.map=landscapeTexture('pavers');mPave.userData.worldScale=1/1.6;
+
+/* ================= helpers ================= */
+function addBox(parent, x0,y0,z0, x1,y1,z1, material, cast=true){
+  const g = new THREE.BoxGeometry(
+    Math.max(x1-x0, 0.001), Math.max(y1-y0, 0.001), Math.max(z1-z0, 0.001));
+  const mesh = new THREE.Mesh(g, material);
+  if(material.userData.worldScale){
+    const uv=g.attributes.uv,p=g.attributes.position,n=g.attributes.normal,s=material.userData.worldScale;
+    for(let i=0;i<uv.count;i++){
+      const x=p.getX(i)+(x0+x1)/2,y=p.getY(i)+(y0+y1)/2,z=p.getZ(i)+(z0+z1)/2;
+      uv.setXY(i,(Math.abs(n.getX(i))>.5?z:x)*s,(Math.abs(n.getY(i))>.5?z:y)*s);
+    }
+  }
+  mesh.position.set((x0+x1)/2, (y0+y1)/2, (z0+z1)/2);
+  mesh.castShadow = cast; mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+function addMesh(parent, geo, material, x,y,z, rx=0, ry=0, rz=0){
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.position.set(x,y,z); mesh.rotation.set(rx,ry,rz);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+// Bevelled furniture and sanitary ceramics, with real curved edge geometry.
+function softBox(parent,x,y,z,w,h,d,mat,r=.035){
+  r=Math.min(r,w/4,h/4,d/4);
+  const shape=new THREE.Shape();
+  shape.moveTo(-w/2+r,-h/2);
+  shape.lineTo(w/2-r,-h/2);shape.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);
+  shape.lineTo(w/2,h/2-r);shape.quadraticCurveTo(w/2,h/2,w/2-r,h/2);
+  shape.lineTo(-w/2+r,h/2);shape.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
+  shape.lineTo(-w/2,-h/2+r);shape.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:d-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r/2,bevelSegments:3,steps:1,curveSegments:5});
+  geo.translate(0,0,-d/2+r);
+  return addMesh(parent,geo,mat,x,y,z);
+}
+function pipe(parent,points,r=.015,mat=mMetal){
+  const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+  return addMesh(parent,new THREE.TubeGeometry(curve,24,r,8,false),mat,0,0,0);
+}
+function interiorDetails(parent,mirror){
+  const d=new THREE.Group();d.name='interior-details';
+  if(mirror){d.scale.x=-1;d.position.x=6.5;} parent.add(d);
+  const box=(a,b,c,e,f,h,m)=>addBox(d,a,b,c,e,f,h,m);
+  const seam=std(0xb4a28a,.95);
+  for(const [x0,x1,z0,z1] of [[.2,3.3,.2,3.1],[3.4,6.4,.2,2.1],[3.4,6.4,2.2,4.72]]){
+    for(let x=x0+.19;x<x1;x+=.19){
+      addBox(d,x,.0202,z0,x+.002,.0208,z1,seam,false);
+      for(let z=z0+.6+((Math.round(x/.19)%2)*.45);z<z1;z+=1.2)
+        addBox(d,x-.187,.0202,z,x,.0208,z+.002,seam,false);
+    }
+  }
+  // Refrigerator faces the kitchen aisle (+X), not the adjacent cabinet end (+Z).
+  softBox(d,.914,1.205,.555,.035,1.35,.61,mWhite,.012);
+  softBox(d,.914,.37,.555,.035,.30,.61,mWhite,.012);
+  box(.938,.89,.76,.971,1.38,.79,mMetal);
+  box(.938,.39,.76,.971,.56,.79,mMetal);
+  box(.255,.035,.26,.88,.09,.85,mDark);
+  // Individual cabinet fronts, toe kick, oven and four-ring hob.
+  box(.84,.08,.96,.865,.17,2.94,mDark);
+  for(const [a,b] of [[.97,1.57],[1.59,1.96],[2.63,2.94]]){
+    softBox(d,.862,.51,(a+b)/2,.025,.66,b-a,mWhite,.009);
+    box(.882,.72,a+.07,.913,.745,b-.07,mMetal);
+  }
+  softBox(d,.865,.5,2.3,.035,.61,.57,mDark,.012);
+  box(.886,.69,2.05,.92,.72,2.55,mMetal);
+  box(.886,.26,2.08,.89,.60,2.52,mDark);
+  for(const z of [2.09,2.50]) addMesh(d,new THREE.CylinderGeometry(.025,.025,.02,16),mMetal,.896,.76,z,0,0,Math.PI/2);
+  for(const x of [.4,.67]) for(const z of [2.13,2.46])
+    addMesh(d,new THREE.TorusGeometry(.082,.004,5,24),mMetal,x,.947,z,Math.PI/2);
+  for(const z of [1.02,1.44]){
+    box(.602,1.51,z,.618,2.19,z+.39,mWhite);
+    box(.62,1.55,z+.30,.649,1.77,z+.322,mMetal);
+  }
+  // Recessed sink: rim surrounds the bowl; spout ends vertically over its centre.
+  box(.31,.921,1.06,.77,.928,1.64,mMetal);
+  box(.35,.929,1.1,.73,.935,1.6,mDark);
+  box(.39,.936,1.14,.69,.938,1.56,mMetal);
+  addMesh(d,new THREE.CylinderGeometry(.023,.023,.003,16),mDark,.54,.94,1.35);
+  pipe(d,[[.32,.94,1.35],[.32,1.22,1.35],[.39,1.32,1.35],[.54,1.28,1.35],[.54,1.19,1.35]],.016);
+  box(.28,.96,1.42,.3,1.04,1.48,mMetal);
+  // Door frames and flush closed leaves; both sides have usable lever handles.
+  for(const [a,b,z] of [[3.65,4.45,2.15],[2.3,3.1,3.15]]){
+    softBox(d,(a+b)/2,1.025,z,b-a-.035,2.02,.04,mDoorIn,.012);
+    for(const face of [-1,1]){
+      const zz=z+face*.072;
+      box(a-.045,0,zz-.016,a+.015,2.10,zz+.016,mWhite);
+      box(b-.015,0,zz-.016,b+.045,2.10,zz+.016,mWhite);
+      box(a-.045,2.045,zz-.016,b+.045,2.10,zz+.016,mWhite);
+      box(b-.14,.94,zz-.018,b-.11,1.08,zz+.018,mDark);
+      box(b-.25,1.01,zz-.035,b-.12,1.035,zz+.035,mMetal);
+      box(a+.12,.23,z+face*.022-.002,b-.12,1.83,z+face*.022+.002,mWhite);
+    }
+  }
+  // Bedroom: upholstered headboard, wardrobe with two overlapping sliding doors, and drawers.
+  softBox(d,4.9,.7,4.61,1.66,.7,.13,mLinen,.05);
+  softBox(d,4.9,.677,3.05,1.44,.045,.5,mRug,.012);
+  for(const x of [3.5,5.85]) for(const y of [.18,.37]){
+    box(x+.015,y-.065,4.25,x+.43,y+.065,4.27,mOak);
+    box(x+.16,y,4.23,x+.29,y+.018,4.25,mDark);
+  }
+  // Two-track coupe system faces the room: the leaves overlap at the centre and never swing into the bed.
+  box(5.77,.035,2.24,5.86,.075,3.46,mDark);
+  box(5.77,2.10,2.24,5.86,2.15,3.46,mDark);
+  for(const [face,z0,z1] of [[5.815,2.26,2.93],[5.78,2.78,3.44]]){
+    box(face,.075,z0,face+.028,2.10,z1,mWhite);
+    box(face+.029,.075,z0,face+.052,2.10,z0+.035,mFrame);
+    box(face+.029,.075,z1-.035,face+.052,2.10,z1,mFrame);
+    box(face+.029,.075,z0,face+.052,.115,z1,mFrame);
+    box(face+.029,2.06,z0,face+.052,2.10,z1,mFrame);
+    box(face+.035,.84,z1-.09,face+.064,1.34,z1-.045,mDark);
+  }
+  box(5.745,.04,2.25,5.765,.085,3.45,mMetal);
+  box(5.785,.04,2.25,5.805,.085,3.45,mMetal);
+  for(const x of [3.72,6.07]){
+    addMesh(d,new THREE.CylinderGeometry(.07,.09,.025,20),mDark,x,.515,4.48);
+    addMesh(d,new THREE.CylinderGeometry(.012,.012,.1,12),mMetal,x,.555,4.48);
+  }
+  // Warm abstract artwork replaces the television on the bedroom partition.
+  box(3.42,.82,2.55,3.49,.88,3.75,mFrame);
+  box(3.42,1.66,2.55,3.49,1.72,3.75,mFrame);
+  box(3.42,.88,2.55,3.49,1.66,2.61,mFrame);
+  box(3.42,.88,3.69,3.49,1.66,3.75,mFrame);
+  box(3.425,.88,2.61,3.495,1.66,3.69,mArt);
+  // Hall bench: separated shoe-storage fronts and mirror frame.
+  for(const x of [4.52,4.835]){
+    box(x,.08,.6,x+.295,.41,.616,mOak);
+    box(x+.08,.33,.617,x+.21,.35,.635,mDark);
+  }
+  box(4.47,.82,.205,5.13,.85,.26,mOak);
+  box(4.47,1.95,.205,5.13,1.98,.26,mOak);
+  // Bathroom basin with visible bowl, drain and tap aimed into the basin (-Z).
+  softBox(d,2.3,.86,4.395,.51,.045,.46,mCeram,.035);
+  box(2.07,.87,4.18,2.53,.94,4.22,mCeram);
+  box(2.07,.87,4.56,2.53,.94,4.61,mCeram);
+  box(2.07,.87,4.22,2.11,.94,4.56,mCeram);
+  box(2.49,.87,4.22,2.53,.94,4.56,mCeram);
+  addMesh(d,new THREE.CylinderGeometry(.022,.022,.007,16),mMetal,2.3,.89,4.4);
+  pipe(d,[[2.3,.94,4.58],[2.3,1.12,4.58],[2.3,1.15,4.47],[2.3,1.08,4.4]],.012);
+  for(const y of [.62,.78]){
+    box(2.02,y-.06,4.10,2.58,y+.06,4.12,mOak);
+    box(2.21,y,4.08,2.39,y+.015,4.10,mDark);
+  }
+  // Washer controls and porthole face the free aisle (-Z).
+  softBox(d,2.98,.75,4.049,.55,.13,.03,mWhite,.012);
+  addMesh(d,new THREE.CylinderGeometry(.037,.037,.025,20),mMetal,2.83,.75,4.02,Math.PI/2);
+  box(2.97,.72,4.028,3.17,.78,4.035,mDark);
+  addMesh(d,new THREE.TorusGeometry(.19,.025,10,32),mMetal,2.98,.46,4.026);
+  box(3.145,.41,4.0,3.18,.52,4.025,mWhite);
+  box(1.56,.84,4.505,1.81,.98,4.52,mMetal);
+  // Shower mixer, flexible hose and wall tile joints.
+  box(.57,1.13,4.62,.83,1.19,4.69,mMetal);
+  pipe(d,[[.62,1.13,4.63],[.55,.72,4.48],[.79,.65,4.49],[.85,1.39,4.61]],.009);
+  for(let y=.3;y<2.7;y+=.3) box(.21,y,4.711,3.29,y+.003,4.717,mTile);
+  for(let x=.3;x<3.3;x+=.6) box(x,0,4.711,x+.003,2.7,4.717,mTile);
+}
+
+/* стіна вздовж X (центр zc, товщина t) з прорізами {a,b,y0,y1} */
+function wallX(parent, x0,x1, zc, h,t, material, openings=[]){
+  const ops = [...openings].sort((p,q)=>p.a-q.a);
+  let cur = x0;
+  for (const o of ops){
+    if (o.a > cur+0.001) addBox(parent, cur,0,zc-t/2, o.a,h,zc+t/2, material);
+    if (o.y0 > 0.001)    addBox(parent, o.a,0,zc-t/2, o.b,o.y0,zc+t/2, material);
+    if (o.y1 < h-0.001)  addBox(parent, o.a,o.y1,zc-t/2, o.b,h,zc+t/2, material);
+    cur = o.b;
+  }
+  if (cur < x1-0.001) addBox(parent, cur,0,zc-t/2, x1,h,zc+t/2, material);
+}
+/* стіна вздовж Z (центр xc) з прорізами по z */
+function wallZ(parent, z0,z1, xc, h,t, material, openings=[]){
+  const ops = [...openings].sort((p,q)=>p.a-q.a);
+  let cur = z0;
+  for (const o of ops){
+    if (o.a > cur+0.001) addBox(parent, xc-t/2,0,cur, xc+t/2,h,o.a, material);
+    if (o.y0 > 0.001)    addBox(parent, xc-t/2,0,o.a, xc+t/2,o.y0,o.b, material);
+    if (o.y1 < h-0.001)  addBox(parent, xc-t/2,o.y1,o.a, xc+t/2,h,o.b, material);
+    cur = o.b;
+  }
+  if (cur < z1-0.001) addBox(parent, xc-t/2,0,cur, xc+t/2,h,z1, material);
+}
+
+/* вікно у прорізі: рама + скло (стіна вздовж X на zc товщ. t) */
+function windowX(parent, a,b,y0,y1, zc, t){
+  const f = 0.05;
+  addBox(parent, a,y0,zc-t/2, b,y0+f,zc+t/2, mFrame);
+  addBox(parent, a,y1-f,zc-t/2, b,y1,zc+t/2, mFrame);
+  addBox(parent, a,y0,zc-t/2, a+f,y1,zc+t/2, mFrame);
+  addBox(parent, b-f,y0,zc-t/2, b,y1,zc+t/2, mFrame);
+  if (b-a > 1.0) addBox(parent, (a+b)/2-f/2,y0,zc-t/2, (a+b)/2+f/2,y1,zc+t/2, mFrame);
+  addBox(parent, a+f,y0+f,zc-0.015, b-f,y1-f,zc+0.015, mGlass, false);
+  addBox(parent, a-0.06,y0-0.045,zc-t/2-0.03, b+0.06,y0,zc+t/2+0.03, mWhite);
+}
+
+/* дверне полотно, відкрите під кутом ang (рад), петлі в (px,pz) */
+function doorOpen(parent, px,pz, ang){
+  const pivot = new THREE.Group();
+  pivot.position.set(px, 0, pz);
+  pivot.rotation.y = ang;
+  parent.add(pivot);
+  const leaf = addBox(pivot, -0.02,0.01,0, 0.02,2.03,0.76, mDoorIn);
+  addBox(pivot, -0.05,0.98,0.62, 0.05,1.04,0.67, mDark);
+  return leaf;
+}
+
+/* ================= секція (локальні координати 0..6.5) ================= */
+const H = 2.7;
+function buildSection(mirror, originX){
+  const g = new THREE.Group();
+  g.position.x = originX;
+  const X = (a,b) => mirror ? [6.5-b, 6.5-a] : [a,b];
+  const op = (a,b,y0,y1) => { const [x0,x1] = X(a,b); return {a:x0, b:x1, y0, y1}; };
+  const bx = (x0,x1,y0,y1,z0,z1,m,cast=true) => { const [a,b] = X(x0,x1); return addBox(g, a,y0,z0, b,y1,z1, m, cast); };
+
+  /* --- стіни --- */
+  {
+    const [fx0,fx1] = X(0, 6.4);
+    wallX(g, fx0,fx1, 0.1, H,0.2, mExt, [op(1.0,3.4,0.04,2.4), op(5.4,6.2,0,2.05)]); // затверджений фасад
+    wallX(g, fx0,fx1, 4.82, H,0.2, mExt, [op(1.35,2.15,1.5,2.1), op(4.3,5.5,1.0,2.0)]); // тильний
+  }
+  {
+    const [wx0,wx1] = X(0, 0.2);
+    wallZ(g, 0,4.92, (wx0+wx1)/2, H,0.2, mExt, []); // торець
+  }
+  {
+    const [p0,p1] = X(0.2, 3.3);
+    wallX(g, p0,p1, 3.15, H,0.1, mInt, [op(2.3,3.1,0,2.05)]); // кухня | санвузол (Д-3)
+  }
+  {
+    const [c0,c1] = X(3.3, 3.4);
+    wallZ(g, 2.15,4.72, (c0+c1)/2, H,0.1, mInt, []); // кухня/санвузол | кімната — глуха
+    wallX(g, ...X(3.4,6.4), 2.15, H,0.1, mInt, [op(3.65,4.45,0,2.05)]); // прихожа | кімната (Д-2)
+  }
+
+  /* --- вікна --- */
+  windowX(g, ...X(1.0,3.4), 0.04,2.4, 0.1, 0.2);   // В-1: велике скління затвердженого фасаду
+  // Горизонтальне облицювання з реальними швами; прорізи залишаються вільними.
+  for (let y=0; y<H; y+=0.18){
+    const top=Math.min(y+0.174,H);
+    for (const [a,b,lo,hi] of [[0,1,0,H],[3.4,4.8,0,H],[1,3.4,2.4,H]]){
+      if (top>lo && y<hi) bx(a,b,Math.max(y,lo),Math.min(top,hi),-0.035,-0.005,mClad);
+    }
+    bx(-0.032,-0.006,y,top,0,4.92,mClad);
+  }
+  // Вертикальні дошки навколо входу.
+  for (let x=4.8; x<6.4; x+=0.13){
+    const end=Math.min(x+0.124,6.4);
+    if (x<5.4) bx(x,Math.min(end,5.4),0,H,-0.046,-0.008,mTimber);
+    if (end>6.2) bx(Math.max(x,6.2),end,0,H,-0.046,-0.008,mTimber);
+    if(end>5.4 && x<6.2) bx(Math.max(x,5.4),Math.min(end,6.2),2.05,H,-0.046,-0.008,mTimber);
+  }
+  // Лляні штори за склінням.
+  bx(1.08,1.35,0.08,2.33,0.23,0.25,mLinen,false);
+  bx(3.05,3.32,0.08,2.33,0.23,0.25,mLinen,false);
+  windowX(g, ...X(1.35,2.15), 1.5,2.1, 4.82, 0.2);  // В-2 санвузол
+  windowX(g, ...X(4.3,5.5),   1.0,2.0, 4.82, 0.2);  // В-3 кімната
+
+  /* --- двері --- */
+  { // Д-1 вхідні (зачинені)
+    const [a,b] = X(5.4, 6.2);
+    const mid=(a+b)/2, glassA=mid-0.12, glassB=mid+0.12;
+    addBox(g,a,0.01,0.045,glassA,2.05,0.13,mDoor);
+    addBox(g,glassB,0.01,0.045,b,2.05,0.13,mDoor);
+    addBox(g,glassA,0.01,0.045,glassB,0.3,0.13,mDoor);
+    addBox(g,glassA,1.79,0.045,glassB,2.05,0.13,mDoor);
+    addBox(g,glassA,0.3,0.07,glassB,1.79,0.09,mGlass,false);
+    addBox(g,a-0.045,0,-0.015,a,2.1,0.17,mFrame);
+    addBox(g,b,0,-0.015,b+0.045,2.1,0.17,mFrame);
+    addBox(g,a-0.045,2.05,-0.015,b+0.045,2.1,0.17,mFrame);
+    addBox(g,a+0.065,0.93,-0.025,a+0.10,1.09,0.03,mDark);
+    addBox(g,a+0.08,1.025,-0.055,a+0.20,1.055,-0.02,mDark);
+    bx(5.03,5.12,1.42,1.66,-0.12,-0.045,mDark);
+  }
+  { // Д-2 кімната — вхід з прихожої, прочинені в прихожу
+    // Closed leaf and trim are built by interiorDetails in mirrored local coordinates.
+  }
+  { // Д-3 санвузол — вхід з кухні, прочинені в санвузол
+    // Closed leaf and trim are built by interiorDetails.
+  }
+
+  /* --- підлоги --- */
+  bx(0,6.5, -0.15,0, 0,4.92, mSlab, false);          // плита
+  bx(0.2,3.3, 0,0.02, 0.2,3.10, mWoodF, false);      // кухня
+  bx(3.4,6.4, 0,0.02, 0.2,2.10, mWoodF, false);      // прихожа
+  bx(3.4,6.4, 0,0.02, 2.20,4.72, mWoodF, false);     // кімната
+  bx(0.2,3.3, 0,0.02, 3.20,4.72, mTile, false);      // санвузол
+
+  /* --- кухня (0.2..3.3 × 0.2..3.1) — робоча стіна вздовж західного торця, відкрита до прихожої --- */
+  bx(0.25,0.90, 0.02,1.92, 0.24,0.87, mWhite);        // холодильник біля фасаду (не заступає В-1)
+  bx(0.22,0.85, 0.02,0.88, 0.95,2.95, mWhite);        // нижні шафи 2,0 м
+  bx(0.20,0.88, 0.88,0.92, 0.92,2.98, mCounter);      // стільниця
+  bx(0.28,0.80, 0.92,0.94, 2.0,2.6, mDark);           // варильна поверхня
+  bx(0.30,0.78, 1.86,1.98, 2.06,2.54, mMetal);        // витяжка
+  bx(0.44,0.58, 1.98,2.7, 2.18,2.32, mMetal);         // повітровід
+  bx(0.24,0.60, 1.5,2.2, 1.0,1.85, mWhite);           // верхні шафи
+  bx(1.55,2.65, 0.72,0.76, 0.95,1.85, mOak);          // обідній стіл 1200×900
+  for (const [lx,lz] of [[1.62,1.02],[2.58,1.02],[1.62,1.78],[2.58,1.78]])
+    bx(lx,lx+0.07, 0.02,0.72, lz,lz+0.07, mOak);
+  for (const [cx,cz,dir] of [[1.85,0.62,-1],[2.35,0.62,-1],[1.85,2.18,1],[2.35,2.18,1]]){
+    bx(cx-0.21,cx+0.21, 0.44,0.49, cz-0.21,cz+0.21, mGrey);
+    for(const dx of [-.16,.16]) for(const dz of [-.16,.16])
+      bx(cx+dx-.022,cx+dx+.022,.02,.44,cz+dz-.022,cz+dz+.022,mOak);
+    bx(cx-0.21,cx+0.21, 0.49,0.95, cz+(dir<0?-0.26:0.20),cz+(dir<0?-0.20:0.26), mGrey);
+  }
+  { // підвісний світильник над столом
+    const [cx] = X(2.1,2.1);
+    addBox(g, cx-0.008,2.12,1.39, cx+0.008,2.7,1.41, mDark, false);
+    addMesh(g, new THREE.CylinderGeometry(0.17,0.11,0.2,20), mDark, cx, 2.03, 1.4);
+  }
+
+  /* --- прихожа (3.4..6.4 × 0.2..2.1) — вхідна зона при Д-1 --- */
+  bx(4.50,5.15, 0.02,0.44, 0.24,0.60, mOak);          // лавка під дзеркалом
+  bx(4.50,5.15, 0.44,0.52, 0.24,0.60, mLinen);
+  bx(3.60,4.20, 1.10,1.80, 0.205,0.245, mOak);        // панель гачків
+  for (const hx of [3.75,3.90,4.05])
+    bx(hx-0.015,hx+0.015, 1.42,1.50, 0.245,0.31, mMetal);
+  bx(4.50,5.10, 0.85,1.95, 0.21,0.245, mMirror, false); // дзеркало
+  bx(3.55,6.25, 0.021,0.032, 0.85,1.75, mRug, false); // доріжка
+
+  /* --- кімната (3.4..6.4 × 2.2..4.72) — ліжко узголів'ям до тильної стіни під В-3 --- */
+  bx(4.10,5.70, 0.02,0.35, 2.72,4.72, mOak);          // ліжко 2000×1600
+  softBox(g,X(4.9,4.9)[0],.465,3.72,1.5,.23,1.9,mMatr,.06);
+  bx(4.05,5.75, 0.35,1.05, 4.60,4.72, mOak);          // узголів'я
+  for(const x of [4.52,5.28]) softBox(g,X(x,x)[0],.68,4.40,.65,.17,.4,mWhite,.06);
+  bx(4.18,5.62, 0.58,0.66, 2.80,4.30, mLinen);        // покривало
+  bx(3.50,3.95, 0.02,0.50, 4.27,4.70, mOak);          // тумба (захід)
+  bx(5.85,6.30, 0.02,0.50, 4.27,4.70, mOak);          // тумба (схід)
+  addMesh(g, new THREE.CylinderGeometry(0.09,0.12,0.18,14), mLinen, X(3.72,3.72)[0], 0.59, 4.48); // лампа
+  addMesh(g, new THREE.CylinderGeometry(0.09,0.12,0.18,14), mLinen, X(6.07,6.07)[0], 0.59, 4.48); // лампа
+  bx(5.84,6.40, 0.02,2.15, 2.25,3.45, mWhite);        // шафа вздовж міжсекційної стіни
+  bx(3.42,3.57, 0.48,0.54, 2.69,3.61, mOak);          // вузька полиця під картиною
+  bx(4.00,5.80, 0.021,0.032, 2.28,3.20, mRug, false); // килим
+
+  /* --- санвузол (0.2..3.3 × 3.2..4.72) — вся сантехніка на тильній стіні: душ | унітаз | умивальник | пральна --- */
+  bx(0.25,1.15, 0.02,0.10, 3.85,4.72, mCeram);        // душовий піддон 900×870
+  addMesh(g, new THREE.CylinderGeometry(0.05,0.05,0.015,14), mDark, X(0.7,0.7)[0], 0.105, 4.3); // трап
+  bx(1.13,1.17, 0.10,2.05, 4.10,4.72, mGlass, false); // скло душової (бічне)
+  bx(0.25,0.75, 0.10,2.05, 3.83,3.87, mGlass, false); // скло душової (фронт, walk-in)
+  bx(0.68,0.72, 1.35,2.28, 4.66,4.70, mMetal);        // стійка душа
+  bx(0.66,0.74, 2.22,2.26, 4.40,4.70, mMetal);        // виливок
+  addMesh(g, new THREE.CylinderGeometry(0.15,0.15,0.025,18), mMetal, X(0.7,0.7)[0], 2.21, 4.42); // тропічна лійка
+  bx(1.38,1.98, 0.02,1.15, 4.52,4.72, mCeram);        // інсталяція унітаза (під вікном В-2)
+  softBox(g,X(1.68,1.68)[0],.25,4.3,.38,.32,.48,mCeram,.08);
+  const seat=addMesh(g,new THREE.TorusGeometry(.145,.036,10,32),mCeram,X(1.68,1.68)[0],.43,4.28,Math.PI/2);
+  seat.scale.y=1.4;
+  bx(2.0,2.6, 0.5,0.85, 4.12,4.67, mOak);             // тумба умивальника (задня стіна)
+  bx(2.68,3.28, 0.02,0.85, 4.07,4.67, mWhite);        // пральна машина — прибрана з проходу
+  addMesh(g, new THREE.CylinderGeometry(0.17,0.17,0.03,20), mDark, X(2.98,2.98)[0], 0.48, 4.055, Math.PI/2,0,0);
+  addMesh(g, new THREE.CylinderGeometry(0.24,0.24,0.72,20), mWhite, X(2.98,2.98)[0], 1.9, 4.35); // бойлер 80 л над пральною
+  bx(2.2,2.62, 1.1,1.78, 4.66,4.7, mMirror, false);   // дзеркало над умивальником
+
+  interiorDetails(g,mirror);
+  /* --- тераса (6.5 × 2.0) --- */
+  bx(0,6.5, -0.08,-0.02, -2.0,0, mDeck, false);
+  {
+    const [sx0,sx1] = X(5.25,6.35);
+    addBox(g, sx0,-0.15,-2.40, sx1,-0.095,-1.9, mDeck, false);
+    addBox(g, sx0,-0.095,-2.20, sx1,-0.025,-1.9, mDeck, false);
+  }
+  bx(0,6.5,-0.15,-0.08,-2.01,-1.96,mDark);
+  for(let z=-1.96;z<0;z+=.14) bx(0,6.5,-.023,-.019,z,z+.004,mTimber,false);
+  { // садові меблі
+    const [cx] = X(2.2,2.2);
+    addMesh(g, new THREE.CylinderGeometry(0.36,0.36,0.03,22), mOak, cx, 0.55, -1.0);
+    for (const [dx,dz] of [[-.2,-.16],[.2,-.16],[0,.2]])
+      addBox(g,cx+dx-.025,-.02,-1+dz-.025,cx+dx+.025,.54,-1+dz+.025,mOak);
+    for (const dx of [-0.75, 0.75]){
+      const [ax] = X(2.2+dx, 2.2+dx);
+      const chair=new THREE.Group(); chair.name='summer-armchair'; g.add(chair);
+      for(const dx of [-.27,.27]) for(const z of [-1.32,-.76])
+        addBox(chair,ax+dx-.025,-.02,z-.025,ax+dx+.025,.48,z+.025,mOak);
+      addBox(chair,ax-.29,.36,-1.36,ax+.29,.42,-.72,mOak);
+      addBox(chair,ax-.25,.42,-1.32,ax+.25,.53,-.76,mLinen);
+      const back=addBox(chair,ax-.25,.51,-.81,ax+.25,1.03,-.7,mLinen);
+      back.rotation.x=-.12;
+      for(const dx of [-.30,.30]){
+        addBox(chair,ax+dx-.025,.43,-1.22,ax+dx+.025,.7,-1.16,mOak);
+        addBox(chair,ax+dx-.035,.69,-1.35,ax+dx+.035,.735,-.7,mOak);
+      }
+    }
+  }
+  return g;
+}
+
+/* ================= будинок ================= */
+const gA = buildSection(false, 0);
+const gB = buildSection(true, 6.5);
+model.add(gA, gB);
+addBox(model, 6.4,0,0, 6.6,H,4.92, mExt);            // міжсекційна стіна
+
+/* ділянка 15,2 × 40,43 м (кад. план): тил z=5,92, вулиця z=-34,51 */
+const siteStart = model.children.length;
+addBox(model, -26,-0.22,-42, 39,-0.16,28, mGrass, false);
+addBox(model, -10,-0.158,-38.6, 24,-0.148,-34.56, std(0x4a4a4c, 0.95), false); // вулиця (асфальт)
+addBox(model, -0.35,-0.19,-2.35, 13.35,-0.145,5.3, mSlab, false);
+// Графітова центральна перегородка: торцем до фасадного ракурсу.
+const terraceDivider=addBox(model,6.44,-0.02,-1.92,6.56,2.32,0,mDoor);
+terraceDivider.name='graphite-terrace-divider';
+
+/* паркан із чорного профнастилю h=1,8 — боки та тил, 1 м від будинку */
+const mFence = std(0x454b52, 0.72, 0.28);
+const mRib   = std(0x353b42, 0.64, 0.35);
+function fenceRun(x0,z0, x1,z1){
+  const alongX = Math.abs(x1-x0) > Math.abs(z1-z0);
+  const a0 = alongX ? Math.min(x0,x1) : Math.min(z0,z1);
+  const a1 = alongX ? Math.max(x0,x1) : Math.max(z0,z1);
+  const c = alongX ? z0 : x0, y1 = 1.64;               // 1,8 м над ґрунтом (-0.16)
+  const beam=(a,b,lo,hi,depth,mat)=>addBox(model,...(alongX ? [a,lo,c-depth,b,hi,c+depth] : [c-depth,lo,a,c+depth,hi,b]),mat);
+  beam(a0,a1,-.16,-.02,.075,mSlab);
+  beam(a0,a1,1.63,1.68,.045,mRib);
+  for(const y of [.25,1.23]) beam(a0,a1,y,y+.05,.05,mRib);
+  addBox(model, ...(alongX ? [a0,-0.16,c-0.02, a1,y1,c+0.02] : [c-0.02,-0.16,a0, c+0.02,y1,a1]), mFence);
+  const n = Math.max(1, Math.round((a1-a0)/2.5));      // стовпи 60×60, крок ~2,5 м
+  for (let i=0;i<=n;i++){
+    const a = a0 + (a1-a0)*i/n;
+    addBox(model, ...(alongX ? [a-0.03,-0.16,c-0.03, a+0.03,y1+0.06,c+0.03] : [c-0.03,-0.16,a-0.03, c+0.03,y1+0.06,a+0.03]), mRib);
+    beam(a-.045,a+.045,y1+.06,y1+.085,.045,mFence);
+  }
+  for (let a=a0+0.12; a<a1-0.05; a+=0.25)              // гофри профнастилу
+    addBox(model, ...(alongX ? [a,-0.16,c-0.035, a+0.09,y1,c+0.035] : [c-0.035,-0.16,a, c+0.035,y1,a+0.09]), mRib);
+}
+/* паркан по реальній межі ділянки: тил 15,2 м, схід прямий, захід — східцями до вулиці */
+fenceRun(-1.1,-2.71, -1.1,5.92);      // захід біля будинку (8,63 м)
+fenceRun(14.1,-2.71, 14.1,5.92);      // схід біля будинку
+fenceRun(-1.1,5.92, 14.1,5.92);       // тильна межа
+fenceRun(-1.1,-2.71, 3.43,-2.71);     // уступ 4,53
+fenceRun(3.43,-2.71, 3.43,-9.0);      // 6,29
+fenceRun(3.43,-9.0, 5.02,-9.0);       // уступ 1,59
+fenceRun(5.02,-9.0, 5.02,-14.9);      // 5,90 (уздовж парковки)
+fenceRun(5.02,-14.9, 10.48,-14.9);    // уступ 5,46
+fenceRun(10.48,-14.9, 10.48,-20.91);  // 6,01
+fenceRun(10.48,-20.91, 11.47,-20.91); // уступ 0,99
+fenceRun(11.47,-20.91, 11.47,-34.51); // шия 13,60
+fenceRun(14.1,-2.71, 14.1,-34.51);    // східна межа — пряма до вулиці
+{ // ворота розпашні 2,63 м у шиї, стулки прочинені всередину
+  for (const px of [11.47, 14.1])
+    addBox(model, px-0.06,-0.16,-34.57, px+0.06,1.9,-34.45, mRib);
+  const leaf = (px, ang, len) => {
+    const piv = new THREE.Group();
+    piv.position.set(px, -0.16, -34.51);
+    piv.rotation.y = ang;
+    model.add(piv);
+    addBox(piv, -0.025,0.06,0, 0.025,1.62,len-0.03, mFence);
+    addBox(piv, -0.045,1.50,0, 0.045,1.64,len-0.03, mRib);
+    addBox(piv, -0.045,0.06,0, 0.045,0.18,len-0.03, mRib);
+    addBox(piv, -0.045,0.06,len-0.15, 0.045,1.64,len-0.03, mRib);
+  };
+  leaf(11.53, 0.9, 1.26);
+  leaf(14.04, -0.9, 1.26);
+}
+
+/* в'їзд (тверде покриття), парковка 5,46 × 5,90 та авто */
+addBox(model, 11.47,-0.155,-34.51, 14.10,-0.14,-20.91, mPave, false); // шия 2,63 × 13,60
+addBox(model, 10.48,-0.155,-20.91, 14.10,-0.14,-9.0, mPave, false);   // в'їзд уздовж східної межі
+addBox(model, 5.02,-0.155,-14.9, 10.48,-0.14,-9.0, mPave, false);     // парковка
+const mCar = std(0x3f454d, 0.35, 0.7);
+const mCar2 = std(0xe3e5e6, 0.28, 0.4);
+const mCarGlass = std(0x263b48, 0.18, 0.55);
+const mTire=std(0x202124,.96), mLamp=std(0xf1f3e2,.25), mTail=std(0xa52824,.3);
+function carShell(parent,cx,mat){
+  // Cross-sections give the body tapered bumpers, bonnet and sloping glazing.
+  const rings=[[-2.05,.68,.28,.53],[-1.65,.82,.18,.68],[-1.25,.82,.18,.72],[1.35,.82,.18,.71],[2.05,.73,.26,.55]];
+  const vertices=[],indices=[];
+  rings.forEach(([z,w,b,t])=>vertices.push(cx-w,b,z,cx+w,b,z,cx+w,t,z,cx-w,t,z));
+  for(let j=0;j<rings.length-1;j++) for(let k=0;k<4;k++){
+    const a=j*4+k,b=j*4+(k+1)%4,c=b+4,d=a+4; indices.push(a,b,d,b,c,d);
+  }
+  indices.push(0,3,1,1,3,2,16,17,19,17,18,19);
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geo.setIndex(indices);geo.computeVertexNormals();
+  addMesh(parent,geo,mat,0,0,0);
+}
+function parkedCar(cx,cz,cm){
+  const car=new THREE.Group();car.name='parked-car-horizontal';
+  car.position.set(cx,0,cz);car.rotation.y=Math.PI/2;model.add(car);
+  carShell(car,0,cm);
+  const cabin=new THREE.CylinderGeometry(.65,.79, .67,4,1,false,Math.PI/4);
+  cabin.scale(1,1,1.85);
+  addMesh(car,cabin,mCarGlass,0,1.01,-.15);
+  addBox(car,-.47,1.32,-.9,.47,1.37,.6,cm);
+  for(const side of [-1,1]){
+    addBox(car,side*.64-.035,.7,-.21,side*.64+.035,1.3,-.10,cm);
+    addBox(car,side*.88-.11,.78,.85,side*.88+.11,.88,1.07,cm);
+    for(const z of [-.65,.6]) addBox(car,side*.82-.015,.64,z,side*.82+.015,.67,z+.15,mMetal);
+  }
+  for(const x of [-.51,.51]){
+    addBox(car,x-.16,.4,2.04,x+.16,.53,2.08,mLamp);
+    addBox(car,x-.16,.43,-2.07,x+.16,.56,-2.03,mTail);
+  }
+  addBox(car,-.34,.27,2.03,.34,.37,2.07,mDark);
+  for (const [wx,wz] of [[-.77,-1.25],[.77,-1.25],[-.77,1.35],[.77,1.35]])
+  {
+    addMesh(car, new THREE.CylinderGeometry(0.3,0.3,0.22,24), mTire, wx, 0.16, wz, 0, 0, Math.PI/2);
+    addMesh(car,new THREE.CylinderGeometry(.19,.19,.235,12),mMetal,wx,.16,wz,0,0,Math.PI/2);
+    addMesh(car,new THREE.CylinderGeometry(.065,.065,.24,12),mDark,wx,.16,wz,0,0,Math.PI/2);
+  }
+}
+parkedCar(7.65,-10.45,mCar);
+parkedCar(7.65,-12.78,mCar2);
+// Two compact barbecue patios alongside the side fences, with access from the lawn.
+for(const [cx,turn] of [[4.65,-Math.PI/2],[12.75,Math.PI/2]]){
+  const patio=new THREE.Group();patio.name='barbecue-zone';model.add(patio);
+  addBox(patio,cx-.92,-.159,-7.15,cx+.92,-.12,-4.65,mPave,false);
+  for(const x of [cx-.96,cx+.92]) addBox(patio,x,-.15,-7.19,x+.04,-.095,-4.61,mSlab);
+  for(const z of [-7.19,-4.65]) addBox(patio,cx-.96,-.15,z,cx+.96,-.095,z+.04,mSlab);
+  const grill=new THREE.Group();grill.name='barbecue-grill';
+  grill.position.set(cx,.0,-5.9);grill.rotation.y=turn;patio.add(grill);
+  softBox(grill,0,.36,0,.82,.67,.53,mDark,.035);
+  for(const x of [-.20,.20]){
+    softBox(grill,x,.39,-.279,.37,.54,.022,mFence,.01);
+    addBox(grill,x-.04,.56,-.318,x+.04,.58,-.292,mMetal);
+  }
+  addBox(grill,-.48,.73,-.34,.48,.78,.34,mMetal);
+  addMesh(grill,new THREE.CylinderGeometry(.30,.30,.83,32),mFence,0,.82,.02,0,0,Math.PI/2);
+  pipe(grill,[[-.24,.91,-.235],[-.24,.94,-.34],[.24,.94,-.34],[.24,.91,-.235]],.017);
+  for(const x of [-.31,0,.31]) addMesh(grill,new THREE.CylinderGeometry(.033,.033,.027,16),mMetal,x,.69,-.353,Math.PI/2);
+  for(const x of [-.68,.68]){
+    addBox(grill,x-.18,.735,-.28,x+.18,.78,.28,mMetal);
+    addBox(grill,x-.012,.55,-.015,x+.012,.74,.015,mDark);
+  }
+  for(const x of [-.34,.34]) for(const z of [-.20,.20])
+    addMesh(grill,new THREE.CylinderGeometry(.072,.072,.05,16),mTire,x,-.043,z,0,0,Math.PI/2);
+}
+
+// Human figures add scale and show how the right-hand outdoor zones are used.
+const mSkin=std(0xc58f6a,.82), mHair=std(0x33271f,.92), mManTop=std(0x344d5f,.88),
+      mManPants=std(0x292b2e,.92), mWomanTop=std(0xd8c6b2,.9), mWomanPants=std(0x56656d,.9);
+function limb(parent,a,b,r,mat){
+  const p0=new THREE.Vector3(...a),p1=new THREE.Vector3(...b),v=p1.clone().sub(p0);
+  const mesh=addMesh(parent,new THREE.CylinderGeometry(r*.9,r,v.length(),12),mat,0,0,0);
+  mesh.position.copy(p0).add(p1).multiplyScalar(.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());
+  return mesh;
+}
+function head(parent,y){
+  const h=addMesh(parent,new THREE.SphereGeometry(.13,20,16),mSkin,0,y,0);h.scale.set(.86,1.08,.9);
+  const hair=addMesh(parent,new THREE.SphereGeometry(.134,20,12,0,Math.PI*2,0,Math.PI*.47),mHair,0,y+.035,-.005);
+  hair.scale.set(.88,1,.92);
+  addMesh(parent,new THREE.SphereGeometry(.022,12,8),mSkin,0,y-.005,.125);
+}
+function standingMan(){
+  const p=new THREE.Group();p.name='man-at-right-barbecue';
+  p.position.set(11.72,-.12,-5.9);p.rotation.y=Math.PI/2;model.add(p);
+  limb(p,[-.14,.08,0],[-.14,.85,0],.075,mManPants);limb(p,[.14,.08,0],[.14,.85,0],.075,mManPants);
+  addBox(p,-.22,.72,-.12,.22,.96,.12,mManPants);
+  softBox(p,0,1.25,0,.5,.68,.27,mManTop,.08);
+  limb(p,[-.27,1.43,0],[-.32,1.13,.18],.055,mManTop);limb(p,[-.32,1.13,.18],[-.18,1.03,.36],.045,mSkin);
+  limb(p,[.27,1.43,0],[.34,1.15,.16],.055,mManTop);limb(p,[.34,1.15,.16],[.18,1.05,.34],.045,mSkin);
+  head(p,1.69);
+  for(const x of [-.14,.14]) softBox(p,x,.035,.08,.18,.07,.33,mDark,.025);
+}
+function seatedWoman(){
+  const p=new THREE.Group();p.name='woman-seated-right-terrace';
+  p.position.set(11.55,-.02,-.98);p.rotation.y=Math.PI;model.add(p);
+  addBox(p,-.22,.47,-.13,.22,.63,.14,mWomanPants);
+  softBox(p,0,.91,-.02,.44,.62,.25,mWomanTop,.08);
+  for(const x of [-.14,.14]){
+    limb(p,[x,.55,.02],[x,.43,.34],.068,mWomanPants);
+    limb(p,[x,.43,.34],[x,.08,.48],.058,mWomanPants);
+    softBox(p,x,.045,.57,.17,.07,.3,mOak,.025);
+  }
+  limb(p,[-.23,1.05,0],[-.30,.73,.12],.05,mWomanTop);limb(p,[-.30,.73,.12],[-.29,.68,.32],.04,mSkin);
+  limb(p,[.23,1.05,0],[.30,.73,.12],.05,mWomanTop);limb(p,[.30,.73,.12],[.29,.68,.32],.04,mSkin);
+  head(p,1.35);
+  const hair=addMesh(p,new THREE.SphereGeometry(.145,20,16),mHair,0,1.38,-.035);hair.scale.set(.9,1.15,.8);
+}
+standingMan();
+seatedWoman();
+const siteGroup=new THREE.Group(); siteGroup.name='site-surroundings';
+for(const child of model.children.slice(siteStart)) if(child!==terraceDivider) siteGroup.add(child);
+model.add(siteGroup);
+
+/* дах (група, за замовчуванням прихована) */
+const roofGroup = new THREE.Group(); roofGroup.visible = false; model.add(roofGroup);
+{
+  const ang = Math.atan2(1.88, 2.91), L = Math.hypot(2.91, 1.88);
+  const slopeGeo = new THREE.BoxGeometry(13.9, 0.12, L);
+  const f = new THREE.Mesh(slopeGeo, mRoof); f.position.set(6.5, 3.56, 1.005); f.rotation.x = -ang;
+  const r = new THREE.Mesh(slopeGeo, mRoof); r.position.set(6.5, 3.56, 3.915); r.rotation.x = ang;
+  f.castShadow = r.castShadow = true; f.receiveShadow = r.receiveShadow = true;
+  roofGroup.add(f, r);
+  addBox(roofGroup, -0.45,4.46,2.34, 13.45,4.56,2.58, mRoof); // ковзан
+  const tri = new THREE.Shape([new THREE.Vector2(0,H), new THREE.Vector2(4.92,H), new THREE.Vector2(2.46,4.5)]);
+  const gg = new THREE.ExtrudeGeometry(tri, {depth:0.2, bevelEnabled:false});
+  const gE = new THREE.Mesh(gg, mRoof); gE.rotation.y = -Math.PI/2; gE.position.x = 13;
+  const gW = new THREE.Mesh(gg, mRoof); gW.rotation.y = -Math.PI/2; gW.position.x = 0.2;
+  gE.castShadow = gW.castShadow = true;
+  roofGroup.add(gE, gW);
+  for(const slope of [f,r]) for(let x=-6.85;x<6.9;x+=.46)
+    addBox(slope,x,.06,-L/2,x+.022,.091,L/2,mRoof);
+}
+
+/* Суцільне накриття тераси 13 × 2 м із невеликим звисом. */
+const terraceCanopy = new THREE.Group();
+terraceCanopy.name = 'terrace-canopy';
+roofGroup.add(terraceCanopy);
+{
+  const depth = 2.30, rise = 0.28;
+  const panel = new THREE.Mesh(
+    new THREE.BoxGeometry(13.40, 0.10, Math.hypot(depth, rise)), mRoof);
+  panel.position.set(6.5, 2.56, -1.05);
+  panel.rotation.x = -Math.atan2(rise, depth);
+  panel.castShadow = panel.receiveShadow = true;
+  terraceCanopy.add(panel);
+  for(let x=-6.6;x<6.7;x+=.46)
+    addBox(panel,x,.05,-Math.hypot(depth,rise)/2,x+.02,.08,Math.hypot(depth,rise)/2,mRoof);
+  addMesh(terraceCanopy,new THREE.CylinderGeometry(.065,.065,13.5,16),mRib,6.5,2.36,-2.21,0,0,Math.PI/2);
+  for(const x of [.03,12.97]) addMesh(terraceCanopy,new THREE.CylinderGeometry(.045,.045,2.48,12),mRib,x,1.08,-2.13);
+
+  // Передня балка та п'ять стійок; центральні входи залишаються вільними.
+  addBox(terraceCanopy, 0.04,2.32,-1.98, 12.96,2.46,-1.84, mDark);
+  for (const x of [0.10, 3.25, 6.50, 9.75, 12.90]) {
+    const post = addBox(terraceCanopy, x-0.06,-0.02,-1.97,
+      x+0.06,2.34,-1.85, mDark);
+    post.name = 'terrace-post';
+  }
+  // Поздовжні опорні елементи під покрівлею.
+  for (const x of [0.10, 3.25, 6.50, 9.75, 12.90]) {
+    const rafter = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.12,
+      Math.hypot(depth,rise)), mDark);
+    rafter.position.set(x,2.45,-1.05);
+    rafter.rotation.x = panel.rotation.x;
+    rafter.castShadow = rafter.receiveShadow = true;
+    terraceCanopy.add(rafter);
+  }
+}
+
+/* ================= камери ================= */
+const VIEWS = {
+  overview:{p:[25,18,-26],      t:[5.5,0,-7]},
+  top:     {p:[6.5,58,-14.4],   t:[6.5,0,-14.35]},
+  terrace: {p:[6.5,6.0,-13.0],  t:[6.5,1.8,0.8], fov:55},
+  kitchen: {p:[2.9,1.65,2.3],   t:[0.9,0.85,0.9],   room:true, fov:72},
+  hall:    {p:[1.45,1.7,2.75],  t:[5.9,0.9,0.45],   room:true, fov:68},
+  room:    {p:[5.7,1.75,2.32],  t:[4.65,0.75,4.6],  room:true, fov:72},
+  bath:    {p:[1.6,1.68,3.34],  t:[1.7,0.8,4.7],    room:true, fov:84},
+};
+// Камери кімнат і цілі переходів використовують ту саму зміну осі.
+for (const view of Object.values(VIEWS)) {
+  view.p[2] *= -1;
+  view.t[2] *= -1;
+}
+let secSel = 'both';
+let fly = null;
+function flyTo(p, t){
+  fly = {t0:performance.now(), p0:camera.position.clone(), t0t:controls.target.clone(),
+         p1:new THREE.Vector3(...p), t1:new THREE.Vector3(...t)};
+}
+function goView(name){
+  const V = VIEWS[name]; if (!V) return;
+  const p = [...V.p], t = [...V.t];
+  if (V.room && secSel === 'b'){ p[0] = 13 - p[0]; t[0] = 13 - t[0]; }
+  camera.fov = V.fov || 45;
+  camera.updateProjectionMatrix();
+  setMode('3d');
+  flyTo(p, t);
+  document.querySelectorAll('.rbtn').forEach(b => b.classList.toggle('on', b.dataset.view === name));
+}
+canvas.addEventListener('pointerdown', () => fly = null);
+
+const urlView = new URLSearchParams(location.search).get('view');
+if (urlView && VIEWS[urlView]){
+  const V = VIEWS[urlView];
+  const p = [...V.p], t = [...V.t];
+  if (V.room && secSel === 'b'){ p[0] = 13 - p[0]; t[0] = 13 - t[0]; }
+  camera.fov = V.fov || 45;
+  camera.updateProjectionMatrix();
+  camera.position.set(...p);
+  controls.target.set(...t);
+}
+
+/* ================= режими / UI ================= */
+const planwrap = document.getElementById('planwrap');
+const m3d = document.getElementById('m3d'), mplan = document.getElementById('mplan');
+const mhouseplan=document.getElementById('mhouseplan');
+let mode = '3d';
+function setMode(m){
+  mode = m;
+  planwrap.classList.toggle('show', m !== '3d');
+  m3d.classList.toggle('on', m === '3d');
+  mplan.classList.toggle('on', m === 'plan');
+  mhouseplan.classList.toggle('on',m==='houseplan');
+  if(m!=='3d') buildPlan(m==='houseplan');
+}
+m3d.addEventListener('click', () => setMode('3d'));
+mplan.addEventListener('click', () => setMode('plan'));
+mhouseplan.addEventListener('click',()=>setMode('houseplan'));
+if (location.search.includes('plan')) setMode('plan');
+
+document.querySelectorAll('[data-view]').forEach(b =>
+  b.addEventListener('click', () => goView(b.dataset.view)));
+
+document.getElementById('segSec').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  secSel = b.dataset.sec;
+  document.querySelectorAll('#segSec button').forEach(x => x.classList.toggle('on', x === b));
+  gA.visible = secSel !== 'b';
+  gB.visible = secSel !== 'a';
+});
+
+const chkRoof = document.getElementById('chkRoof');
+const chkClip = document.getElementById('chkClip');
+const chkSpin = document.getElementById('chkSpin');
+const chkHouseOnly=document.getElementById('chkHouseOnly');
+const clipPlane = new THREE.Plane(new THREE.Vector3(0,-1,0), 1.35);
+function applyLayers(){
+  roofGroup.visible = chkRoof.checked && !chkClip.checked;
+  wallMats.forEach(m => m.clippingPlanes = chkClip.checked ? [clipPlane] : null);
+  controls.autoRotate = chkSpin.checked;
+  siteGroup.visible=!chkHouseOnly.checked;
+}
+chkHouseOnly.addEventListener('change',()=>{
+  applyLayers();
+  if(chkHouseOnly.checked && mode==='3d') goView('terrace');
+});
+chkRoof.addEventListener('change', applyLayers);
+chkClip.addEventListener('change', applyLayers);
+chkSpin.addEventListener('change', applyLayers);
+if (location.search.includes('roof')){ chkRoof.checked = true; applyLayers(); }
+
+/* ================= 2D план ================= */
+function buildPlan(houseOnly=false){
+  const Y = z => 492 - z; // z(см) → svg y (см); тераса внизу
+  let s = `<style>#plan .hit{cursor:pointer;fill:transparent}#plan .hit:hover{fill:rgba(35,31,32,.07)}
+  #plan text{font-family:'IBM Plex Mono',monospace;fill:#231F20}</style>`;
+  const line = (x0,y0,x1,y1,w,c='#231F20',extra='') =>
+    `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${c}" stroke-width="${w}" ${extra}/>`;
+  const rect = (x0,z0,x1,z1,fill) =>
+    `<rect x="${x0}" y="${Y(z1)}" width="${x1-x0}" height="${z1-z0}" fill="${fill}"/>`;
+  const txt = (x,y,str,size,anchor='middle',wght=400,extra='') =>
+    `<text x="${x}" y="${y}" font-size="${size}" text-anchor="${anchor}" font-weight="${wght}" ${extra}>${str}</text>`;
+
+  /* заливки приміщень */
+  for (const m of [0, 1]){
+    const X = (a,b) => m ? [1300-b, 1300-a] : [a, b];
+    s += rect(X(20,330)[0], 20, X(20,330)[1], 310, '#faf6ee');   // кухня
+    s += rect(X(340,640)[0], 20, X(340,640)[1], 210, '#f6f3ec'); // прихожа
+    s += rect(X(340,640)[0], 220, X(340,640)[1], 472, '#f2f0ec');// кімната
+    s += rect(X(20,330)[0], 320, X(20,330)[1], 472, '#edf0f2');  // санвузол
+    s += rect(m*650, -200, m*650+650, 0, '#f3eee3');             // тераса
+  }
+  /* доски тераси */
+  for (let y = 517; y < 690; y += 25) s += line(0, y, 1300, y, 1.5, '#cfc8b6');
+
+  /* стіни */
+  const W = 20, P = 10;
+  const segsX = (y, list, w) => list.forEach(([a,b]) => s += line(a, y, b, y, w));
+  segsX(Y(0),   [[0,100],[340,540],[620,640],[660,680],[760,960],[1200,1300]], W);      // затверджений фасад
+  segsX(Y(492), [[0,135],[215,430],[550,640],[660,750],[870,1085],[1165,1300]], W);      // тильний
+  s += line(0, Y(0), 0, Y(492), W);                                                       // західний торець
+  s += line(1300, Y(0), 1300, Y(492), W);                                                 // східний торець
+  s += line(650, Y(0), 650, Y(492), W);                                                   // міжсекційна
+  for (const m of [0,1]){
+    const Xp = (a,b) => m ? [1300-b, 1300-a] : [a, b];
+    const segX = (a,b,y) => s += line(Xp(a,b)[0], y, Xp(a,b)[1], y, P);
+    segX(20,230, Y(315)); segX(310,330, Y(315));                                          // кухня|санвузол (Д-3)
+    segX(340,365, Y(215)); segX(445,640, Y(215));                                         // прихожа|кімната (Д-2)
+    const xc = m ? 965 : 335;
+    s += line(xc, Y(215), xc, Y(472), P);                                                 // кухня/санвузол|кімната — глуха
+  }
+  /* тераса: контур + розмежування */
+  s += `<rect x="0" y="${Y(0)}" width="1300" height="200" fill="none" stroke="#231F20" stroke-width="4"/>`;
+  s += line(650, Y(0), 650, Y(-200), 6);
+  // Контур накриття штриховою лінією та стійки в плані.
+  s += `<rect x="-20" y="${Y(10)}" width="1340" height="230" fill="none" stroke="#8b8880" stroke-width="2" stroke-dasharray="12 8"/>`;
+  for (const x of [10, 325, 650, 975, 1290])
+    s += rect(x-6, -197, x+6, -185, '#38363a');
+
+  /* вікна (подвійні лінії у прорізах) */
+  const winX = (a,b,y) => { s += line(a,y-4,b,y-4,2.5); s += line(a,y+4,b,y+4,2.5); };
+  winX(100,340,Y(0)); winX(960,1200,Y(0));
+  winX(135,215,Y(492)); winX(430,550,Y(492)); winX(750,870,Y(492)); winX(1085,1165,Y(492));
+
+  /* двері: полотно + чверть-коло відкривання (у горизонтальних стінах) */
+  const doorX = (hx, wy, dir, swing) => { // dir: полотно +x/-x; swing: +1 у +y (санвузол), -1 у -y (кімната)
+    s += line(hx, wy, hx+dir*80, wy, 5);
+    s += `<path d="M ${hx+dir*80} ${wy} A 80 80 0 0 ${(dir>0)===(swing>0)?1:0} ${hx} ${wy+swing*80}" fill="none" stroke="#231F20" stroke-width="2.5"/>`;
+  };
+  doorX(230, Y(315), 1, -1);  doorX(1070, Y(315), -1, -1);  // Д-3 → санвузол
+  doorX(365, Y(215), 1, 1);   doorX(935, Y(215), -1, 1);    // Д-2 → відчиняються в прихожу
+  for (const m of [0,1]){ // Д-1 — відкривання назовні
+    const a = m ? 680 : 540, b = m ? 760 : 620;
+    s += line(a, Y(0), b, Y(0), 5);
+    s += `<path d="M ${a} ${Y(0)} L ${a} ${Y(0)+80} A 80 80 0 0 ${m?1:0} ${b} ${Y(0)}" fill="none" stroke="#231F20" stroke-width="2.5"/>`;
+  }
+
+  /* меблі та сантехніка (схематично) */
+  const fx = (x0,x1,z0,z1) => s += `<rect x="${x0}" y="${Y(z1)}" width="${x1-x0}" height="${z1-z0}" fill="none" stroke="#231F20" stroke-width="2"/>`;
+  const fc = (x,z,r) => s += `<circle cx="${x}" cy="${Y(z)}" r="${r}" fill="none" stroke="#231F20" stroke-width="2"/>`;
+  for (const m of [0,1]){
+    const Xp = (a,b) => m ? [1300-b, 1300-a] : [a, b];
+    fx(...Xp(25,90), 24, 87);     // холодильник
+    fx(...Xp(22,88), 92, 298);    // кухонна стіна
+    fx(...Xp(155,265), 95, 185);  // стіл
+    fx(...Xp(450,515), 24, 60);   // лавка
+    fx(...Xp(410,570), 272, 472); // ліжко
+    fx(...Xp(584,640), 225, 345); // шафа
+    fx(...Xp(350,395), 427, 470); fx(...Xp(585,630), 427, 470); // тумби
+    fx(...Xp(25,115), 385, 472);  // душова 900×870
+    fc(Xp(70,70)[0], 430, 6);     // трап
+    fx(...Xp(138,198), 452, 472); fx(...Xp(148,188), 408, 450); // унітаз
+    fx(...Xp(200,260), 412, 467); // умивальник
+    fx(...Xp(268,328), 407, 467); fc(Xp(298,298)[0], 437, 17);  // пральна машина
+  }
+
+  /* межа ділянки за кад. планом 15,2 × 40,43: схід прямий, захід — східцями; шия 2,63 з воротами */
+  if(!houseOnly){
+  const fc3 = '#2a2a2e';
+  for(const x of [465,1275]){
+    s += rect(x-92,-715,x+92,-465,'#deddd8');
+    s += rect(x-27,-635,x+27,-545,'#454b52');
+    s += txt(x,Y(-685),'БАРБЕКЮ',13);
+  }
+  s += `<rect x="1147" y="${Y(-2091)}" width="263" height="1360" fill="#efece4"/>`;
+  s += `<rect x="1048" y="${Y(-900)}" width="362" height="1191" fill="#efece4"/>`;
+  s += `<rect x="502" y="${Y(-900)}" width="546" height="590" fill="#efece4"/>`;
+  s += line(-110, Y(592), 1410, Y(592), 9, fc3);                        // тильна межа 15,20
+  s += line(-110, Y(592), -110, Y(-271), 9, fc3);                       // захід 8,63
+  s += line(-110, Y(-271), 343, Y(-271), 9, fc3);                       // уступ 4,53
+  s += line(343, Y(-271), 343, Y(-900), 9, fc3);                        // 6,29
+  s += line(343, Y(-900), 502, Y(-900), 9, fc3);                        // уступ 1,59
+  s += line(502, Y(-900), 502, Y(-1490), 9, fc3);                       // 5,90 уздовж парковки
+  s += line(502, Y(-1490), 1048, Y(-1490), 9, fc3);                     // уступ 5,46
+  s += line(1048, Y(-1490), 1048, Y(-2091), 9, fc3);                    // 6,01
+  s += line(1048, Y(-2091), 1147, Y(-2091), 9, fc3);                    // уступ 0,99
+  s += line(1147, Y(-2091), 1147, Y(-3451), 9, fc3);                    // шия 13,60
+  s += line(1410, Y(592), 1410, Y(-3451), 9, fc3);                      // східна межа — пряма
+  s += line(1147, Y(-3451), 1278, Y(-3451), 6, fc3);                    // ворота 2,63 — стулки 1,31
+  s += `<path d="M 1278 ${Y(-3451)} A 131 131 0 0 1 1147 ${Y(-3451)-131}" fill="none" stroke="${fc3}" stroke-width="2.5"/>`;
+  s += line(1410, Y(-3451), 1279, Y(-3451), 6, fc3);
+  s += `<path d="M 1279 ${Y(-3451)} A 131 131 0 0 0 1410 ${Y(-3451)-131}" fill="none" stroke="${fc3}" stroke-width="2.5"/>`;
+  s += txt(1278, Y(-3451)+34, 'ВОРОТА', 16, 'middle', 600, `fill="${fc3}" letter-spacing="3"`);
+  s += txt(650, Y(592)-16, 'ПАРКАН ІЗ ПРОФНАСТИЛУ · h = 1,8 м', 15, 'middle', 400, `fill="${fc3}" letter-spacing="3"`);
+  s += txt(117, Y(-271)-14, '4,53', 15, 'middle', 400, `fill="${fc3}"`);
+  s += txt(422, Y(-900)-14, '1,59', 15, 'middle', 400, `fill="${fc3}"`);
+  s += txt(775, Y(-1490)-14, '5,46', 15, 'middle', 400, `fill="${fc3}"`);
+  s += txt(1097, Y(-2091)-14, '0,99', 15, 'middle', 400, `fill="${fc3}"`);
+  /* в'їзд та парковка — розмітка поверх покриття */
+  s += `<rect x="502" y="${Y(-900)}" width="546" height="590" fill="none" stroke="#231F20" stroke-width="2"/>`;
+  s += `<rect x="565" y="${Y(-950)}" width="340" height="160" rx="18" fill="${fc3}"/>`;
+  s += `<rect x="565" y="${Y(-1190)}" width="340" height="160" rx="18" fill="${fc3}"/>`;
+  s += txt(775, Y(-920)+5, 'ПАРКОВКА', 15, 'middle', 600, `fill="${fc3}" letter-spacing="1"`);
+  s += `<text x="1205" y="${Y(-2771)}" font-size="16" text-anchor="middle" letter-spacing="3" fill="${fc3}" transform="rotate(-90 1205 ${Y(-2771)})">В'ЇЗД</text>`;
+  }
+
+  /* підписи приміщень */
+  const room = (x, z, n, d) => {
+    s += txt(x, Y(z)-8, n, 25, 'middle', 600, 'letter-spacing="2"');
+    s += txt(x, Y(z)+22, d, 19);
+  };
+  room(215, 250, 'КУХНЯ', '3,10 × 2,90 · 8,99 м²');
+  room(1085, 250, 'КУХНЯ', '3,10 × 2,90 · 8,99 м²');
+  room(490, 118, 'ПРИХОЖА', '3,00 × 1,90 · 5,70 м²');
+  room(810, 118, 'ПРИХОЖА', '3,00 × 1,90 · 5,70 м²');
+  room(490, 246, 'КІМНАТА', '3,00 × 2,52 · 7,56 м²');
+  room(810, 246, 'КІМНАТА', '3,00 × 2,52 · 7,56 м²');
+  room(175, 350, 'САНВУЗОЛ', '3,10 × 1,52 · 4,71 м²');
+  room(1125, 350, 'САНВУЗОЛ', '3,10 × 1,52 · 4,71 м²');
+  room(325, -100, 'ТЕРАСА А', '6,50 × 2,00 · 13,00 м²');
+  room(975, -100, 'ТЕРАСА Б', '6,50 × 2,00 · 13,00 м²');
+  s += txt(325, -52, 'СЕКЦІЯ А', 30, 'middle', 600, 'letter-spacing="10"');
+  s += txt(975, -52, 'СЕКЦІЯ Б', 30, 'middle', 600, 'letter-spacing="10"');
+
+  /* позиції прорізів */
+  const mark = (x, y, t) => s += txt(x, y, t, 16, 'middle', 400, 'fill="#8b8880"');
+  mark(580, Y(0)+105, 'Д-1'); mark(720, Y(0)+105, 'Д-1');
+  mark(405, Y(252), 'Д-2'); mark(895, Y(252), 'Д-2');
+  mark(270, Y(288), 'Д-3'); mark(1030, Y(288), 'Д-3');
+  mark(220, Y(0)+35, 'В-1'); mark(1080, Y(0)+35, 'В-1');
+  mark(175, Y(492)-25, 'В-2'); mark(1125, Y(492)-25, 'В-2');
+  mark(490, Y(492)-25, 'В-3'); mark(810, Y(492)-25, 'В-3');
+
+  /* розміри */
+  const dimH = (x0, x1, y, label) => {
+    s += line(x0, y, x1, y, 2) + line(x0, y-7, x0, y+7, 2) + line(x1, y-7, x1, y+7, 2);
+    s += txt((x0+x1)/2, y-12, label, 21);
+  };
+  const dimV = (x, z0, z1, label) => {
+    s += line(x, Y(z0), x, Y(z1), 2) + line(x-7, Y(z0), x+7, Y(z0), 2) + line(x-7, Y(z1), x+7, Y(z1), 2);
+    s += `<text x="${x-14}" y="${(Y(z0)+Y(z1))/2}" font-size="21" text-anchor="middle" transform="rotate(-90 ${x-14} ${(Y(z0)+Y(z1))/2})">${label}</text>`;
+  };
+  dimH(0, 650, 720, '6,50'); dimH(650, 1300, 720, '6,50');
+  dimH(0, 1300, -165, '13,00 м');
+  if(!houseOnly) dimH(-110, 1410, -215, '15,20 м');
+  dimV(-62, 0, 492, '4,92'); dimV(-62, -200, 0, '2,00');
+  dimV(-118, -200, 492, '6,92 м');
+  if(!houseOnly){
+  dimV(-200, -271, 592, '8,63'); dimV(-200, -900, -271, '6,29');
+  dimV(-200, -1490, -900, '5,90'); dimV(-200, -2091, -1490, '6,01');
+  dimV(-200, -3451, -2091, '13,60');
+  dimV(1500, -3451, 592, '40,43 м');
+  dimH(1147, 1410, Y(-3451)+70, '2,63');
+  }
+
+  /* вісь симетрії */
+  s += line(650, -70, 650, 712, 2, '#8b8880', 'stroke-dasharray="12 9"');
+  s += txt(650, -56, 'ВІСЬ СИМЕТРІЇ', 16, 'middle', 400, 'letter-spacing="6" fill="#8b8880"');
+
+  /* зони кліку */
+  const hit = (x0, z0, x1, z1, v) =>
+    s += `<rect class="hit" data-v="${v}" x="${x0}" y="${Y(z1)}" width="${x1-x0}" height="${z1-z0}"/>`;
+  hit(20, 20, 330, 310, 'kitchen');  hit(970, 20, 1280, 310, 'kitchen');
+  hit(340, 20, 640, 210, 'hall');    hit(660, 20, 960, 210, 'hall');
+  hit(340, 220, 640, 472, 'room');   hit(660, 220, 960, 472, 'room');
+  hit(20, 320, 330, 472, 'bath');    hit(970, 320, 1280, 472, 'bath');
+  hit(0, -200, 650, 0, 'terrace');   hit(650, -200, 1300, 0, 'terrace');
+
+  const svg = document.getElementById('plan');
+  svg.setAttribute('viewBox', houseOnly ? '-165 -200 1550 980' : '-240 -260 1760 4330');
+  svg.setAttribute('aria-label',houseOnly ? 'План будинку без ділянки' : 'План будинку та ділянки');
+  svg.innerHTML = s;
+  svg.querySelectorAll('.hit').forEach(r => r.addEventListener('click', () => goView(r.dataset.v)));
+}
+buildPlan();
+
+/* ================= цикл ================= */
+const loader = document.getElementById('loader');
+let firstFrame = true;
+function resize(){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.floor(w*renderer.getPixelRatio()) || canvas.height !== Math.floor(h*renderer.getPixelRatio())){
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+}
+function tick(){
+  requestAnimationFrame(tick);
+  resize();
+  if (fly){
+    const k = Math.min((performance.now() - fly.t0) / 1150, 1);
+    const e = k < .5 ? 4*k**3 : 1 - Math.pow(-2*k + 2, 3)/2;
+    camera.position.lerpVectors(fly.p0, fly.p1, e);
+    controls.target.lerpVectors(fly.t0t, fly.t1, e);
+    if (k >= 1) fly = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  if (firstFrame){ firstFrame = false; loader.classList.add('off'); }
+}
+tick();
+</script>
+</body>
+</html>
