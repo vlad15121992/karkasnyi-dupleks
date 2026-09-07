@@ -211,6 +211,7 @@ footer .frow b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-num
     <h2>Поверх</h2>
     <div class="seg" id="segFloor"><button data-floor="both" class="on">Весь</button><button data-floor="ground">1-й</button><button data-floor="upper">Мансарда</button></div>
     <p class="side-note" id="floorStatus">Весь будинок · 2 секції</p>
+    <button class="rbtn" data-view="entry">Прихожа <em>1-й</em></button>
     <button class="rbtn" data-view="kitchen">Кухня-студія <em>1-й</em></button>
     <button class="rbtn" data-view="hall">Сходи <em>1-й → 2-й</em></button>
     <button class="rbtn" data-view="bath">Санвузол <em>1-й</em></button>
@@ -266,7 +267,8 @@ footer .frow b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-num
 
   <section class="blk" id="expl"><div class="blk-head"><h2>01 / Планування з мансардою</h2><p>На одну секцію · секція Б дзеркальна. Зовнішній контур секції 6,90 × 5,22 м. Відступи від стін до паркану ззаду та з обох боків — 0,70 м.</p></div>
 <table class="spec"><thead><tr><th>Поверх</th><th>Приміщення</th><th>Розмір / площа</th></tr></thead><tbody>
-<tr><td>1-й</td><td>Кухня-студія з вхідною зоною та проходом</td><td>Відкритий простір</td></tr>
+<tr><td>1-й</td><td>Прихожа без перегородок і дверей</td><td>Ширина 2,30 м · відкрита до студії</td></tr>
+<tr><td>1-й</td><td>Кухня-студія з вільним проходом</td><td>Відкритий простір</td></tr>
 <tr><td>1-й</td><td>Санвузол у задньому зовнішньому куті</td><td>1,90 × 1,70 м · 3,23 м²</td></tr>
 <tr><td>1-й → мансарда</td><td>Сходи навпроти входу з поворотом на 90°</td><td>Ширина 0,90 м · майданчик 0,90 × 0,90 м</td></tr>
 <tr><td>Мансарда</td><td>Спальня 1 · односпальне ліжко</td><td>2,90 × 3,02 м · 8,76 м²</td></tr>
@@ -749,6 +751,23 @@ function buildSection(mirror,originX){
  addBox(lower,5.4,0,.04,6.2,2.05,.13,mDoor);addBox(lower,5.70,.35,.025,5.90,1.78,.035,mGlass);
  addBox(lower,5.47,.98,-.005,5.61,1.025,.03,mDark);
 
+ // Відкрита прихожа 2,30 м завширшки: без перегородок та внутрішніх дверей.
+ const entry=new THREE.Group();entry.name='open-entry-zone-2300';lower.add(entry);
+ addBox(entry,4.10,.002,.22,6.40,.014,1.10,mLinen,false);
+ // Панель із чотирма вішалками на глухій частині фасадної стіни.
+ addBox(entry,4.12,.78,.205,5.22,2.08,.235,mOak);
+ for(const x of [4.28,4.54,4.80,5.06]){
+  pipe(entry,[[x,1.52,.235],[x,1.52,.34],[x,1.61,.37]],.025,mDark);
+  addMesh(entry,new THREE.SphereGeometry(.037,12,8),mDark,x,1.62,.37);
+ }
+ // Полиця для взуття з м'якою лавою-табуретом.
+ const shoeBench=new THREE.Group();shoeBench.name='shoe-bench-and-stool';entry.add(shoeBench);
+ addBox(shoeBench,4.14,.04,.255,5.20,.43,.62,mOak);
+ addBox(shoeBench,4.17,.12,.235,5.17,.16,.255,mDoorIn);
+ addBox(shoeBench,4.17,.29,.235,5.17,.33,.255,mDoorIn);
+ for(const x of [4.47,4.82])addBox(shoeBench,x,.04,.235,x+.035,.43,.255,mDoorIn);
+ softBox(shoeBench,4.67,.47,.43,1.02,.12,.34,mLinen,.045);
+
  // Санвузли у задніх зовнішніх кутах, суміщені по вертикалі.
  const rearBath=q=>{
   wallX(q,-.2,1.8,3.27,q===upper?2.43:H,.1,mInt);
@@ -1153,6 +1172,7 @@ const VIEWS = {
   overview:{p:[25,18,-26],      t:[5.5,0,-7]},
   top:     {p:[6.5,58,-14.4],   t:[6.5,0,-14.35]},
   terrace: {p:[6.5,8.5,-16.0],  t:[6.5,2.8,0.8], fov:55},
+  entry:{p:[3.75,1.65,1.28],t:[4.75,1.05,.25],room:true,floor:'ground',fov:74},
   kitchen:{p:[4.8,1.7,2.5],t:[1.5,1,.8],room:true,floor:'ground',fov:74},
   hall:{p:[5.8,1.65,.30],t:[5.9,2.0,3.2],room:true,floor:'ground',fov:78},
   bath:{p:[1.5,1.75,3.60],t:[.4,.95,4.6],room:true,floor:'ground',fov:80},
@@ -1252,7 +1272,7 @@ if (location.search.includes('roof')){ chkRoof.checked = true; applyLayers(); }
 function selectFloor(value,focus=true){
  currentFloor=value;applyLayers();
  document.querySelectorAll('[data-floor]').forEach(b=>b.classList.toggle('on',b.dataset.floor===value));
- document.getElementById('floorStatus').textContent=value==='upper'?'Мансарда · дві спальні та санвузол':value==='ground'?'1-й поверх · кухня-студія, сходи, санвузол':'Весь будинок · 2 секції';
+ document.getElementById('floorStatus').textContent=value==='upper'?'Мансарда · дві спальні та санвузол':value==='ground'?'1-й поверх · прихожа, кухня-студія, сходи, санвузол':'Весь будинок · 2 секції';
  if(mode!=='3d')buildPlan(mode==='houseplan');
  if(focus&&mode==='3d')flyTo([17,16,13],[6.5,value==='upper'?3.6:1, -1]);
 }
@@ -1342,13 +1362,15 @@ function buildPlan(houseOnly=false){
   }else{
    box(-17,25,45,90,'#d1d8d8');box(-17,92,45,260,'#d1d8d8');box(125,125,265,210,'#d1b386');box(320,424,490,500,'#aeb6b7');box(390,335,475,380,'#d1b386');
    for(const x of [155,235])for(const z of [80,217])box(x-20,z,x+20,z+38,'#b6b1a6');
+   box(410,22,640,110,'#e6ded0');box(412,24,522,62,'#c6af89');
+   label(525,96,'ПРИХОЖА · 2,30 м',14);
    label(585,285,'ШАФИ',13);
    label(330,260,'КУХНЯ-СТУДІЯ',22);label(330,232,'Відкрита зона',16);
   }
   lx(-40,650,-200,3);lz(650,-200,0,3);label(305,560,mirror?'СЕКЦІЯ Б':'СЕКЦІЯ А',24);
   const hit=(a,z,b,v,name)=>{const[x,y]=X(a,b);s+=`<rect class="hit" data-v="${name}" data-section="${mirror?'b':'a'}" x="${x}" y="${Y(v)}" width="${y-x}" height="${v-z}"/>`;};
   hit(-20,332,170,502,upper?'bath2':'bath');
-  if(upper){hit(-20,20,270,322,'room');hit(280,20,540,322,'room2');hit(540,20,640,224,'room2');}else{hit(-20,20,540,322,'kitchen');hit(550,122,640,492,'hall');}
+  if(upper){hit(-20,20,270,322,'room');hit(280,20,540,322,'room2');hit(540,20,640,224,'room2');}else{hit(-20,20,400,322,'kitchen');hit(410,20,640,112,'entry');hit(550,122,640,492,'hall');}
  }
  if(!houseOnly){
   s+=line(-110,Y(380),-40,Y(380),2)+txt(-75,Y(380)-12,'0,70',15);
@@ -1356,7 +1378,7 @@ function buildPlan(houseOnly=false){
   s+=line(650,Y(522),650,Y(592),2)+txt(690,Y(557),'0,70',15);
  }
  s+=txt(650,-115,upper?'МАНСАРДА / ПЛАН':'1-Й ПОВЕРХ / ПЛАН',30,'middle',600);
- s+=txt(650,-75,upper?'Дві спальні та санвузол на кожну секцію':'Кухня-студія, сходи та санвузол на кожну секцію',19);
+ s+=txt(650,-75,upper?'Дві спальні та санвузол на кожну секцію':'Відкрита прихожа, кухня-студія, сходи та санвузол',19);
  s+=line(-40,765,1340,765,2)+txt(650,795,'13,80 м',23);
  s+=txt(-105,250,'5,22 м',19);s+=txt(-105,610,'2,00 м',19);
  const svg=document.getElementById('plan');svg.setAttribute('viewBox',houseOnly?'-195 -155 1690 1010':'-240 -260 1760 4330');
