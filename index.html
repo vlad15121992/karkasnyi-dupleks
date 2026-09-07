@@ -777,8 +777,9 @@ function buildSection(mirror,originX){
  addBox(kitchen,.34,.90,1.0,.75,.915,1.48,mMetal);pipe(kitchen,[[.28,.91,1.2],[.28,1.2,1.2],[.52,1.2,1.2],[.52,1.06,1.2]],.015,mDark);
  addBox(kitchen,.33,.9,1.86,.77,.925,2.4,mDark);addBox(kitchen,.85,.12,1.86,.87,.72,2.4,mDark);
  addBox(kitchen,.23,1.75,1.84,.86,1.85,2.42,mDark);addBox(kitchen,.25,1.85,2,.5,H,2.25,mDark);
- addBox(lower,1.95,0,4.24,3.65,.43,5.0,mSofa);addBox(lower,1.95,.43,4.82,3.65,.95,5.0,mSofa);
- addBox(lower,2.80,.32,3.35,3.65,.38,3.80,mOak);
+ const lounge=new THREE.Group();lounge.name='lounge-by-rear-window';lower.add(lounge);
+ addBox(lounge,3.20,0,4.24,4.90,.43,5.0,mSofa);addBox(lounge,3.20,.43,4.82,4.90,.95,5.0,mSofa);
+ addBox(lounge,3.90,.32,3.35,4.75,.38,3.80,mOak);
  addBox(lower,1.25,.72,1.25,2.65,.78,2.10,mOak);
  for(const x of [1.32,2.58])for(const z of [1.32,2.03])addBox(lower,x-.025,0,z-.025,x+.025,.72,z+.025,mOak);
  for(const x of [1.55,2.35]){addBox(lower,x-.2,.43,2.17,x+.2,.49,2.55,mLinen);addBox(lower,x-.2,.48,2.50,x+.2,.95,2.57,mOak);}
@@ -799,14 +800,27 @@ function buildSection(mirror,originX){
  pipe(stairs,[[5.5,rise+.9,stairStart],[5.5,landingY+.9,turnZ]],.025,mDark);
  pipe(stairs,[[5.5,landingY+.9,turnZ],[3.82,UPPER+.9,turnZ]],.025,mDark);
  for(let j=1;j<=6;j++)pipe(stairs,[[5.5-(j-.5)*run,(11+j)*rise,turnZ],[5.5-(j-.5)*run,(11+j)*rise+.9,turnZ]],.014,mDark);
- // Фасади шаф повторюють підйом маршу, залишаючись нижче косоурів.
+ // Суцільний корпус до задньої та міжсекційної стін, зі скошеними секційними фасадами.
  const underStair=new THREE.Group();underStair.name='under-stair-cabinets';lower.add(underStair);
- for(let i=1;i<=9;i++){
-  const z=stairStart+i*run+.025,end=z+run-.05,height=(i+1)*rise-.22;
-  if(height<.15)continue;
-  addBox(underStair,5.56,0,z,6.34,height,end,mOak);
-  addBox(underStair,5.535,.025,z+.012,5.56,height-.012,end-.012,mDoorIn);
-  addBox(underStair,5.52,Math.max(.08,height*.55),end-.065,5.537,Math.max(.08,height*.55)+.07,end-.045,mDark);
+ const cabinetStart=1.32,cabinetEnd=5.02;
+ const cabinetTop=z=>Math.min(landingY-.14,.015+(z-stairStart)*(landingY-.15)/(turnZ-stairStart));
+ const cabinetPanel=(a,b,x0,x1,base,offset,mat)=>{
+  const points=[[a,base],[b,base],[b,cabinetTop(b)-offset]];
+  const knee=stairStart+(landingY-.155)*(turnZ-stairStart)/(landingY-.15);
+  if(a<knee&&b>knee)points.push([knee,cabinetTop(knee)-offset]);
+  points.push([a,cabinetTop(a)-offset]);
+  const shape=new THREE.Shape(points.map(([z,y])=>new THREE.Vector2(z,y)));
+  const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:x1-x0,bevelEnabled:false}),mat);
+  mesh.rotation.y=-Math.PI/2;mesh.position.x=x1;mesh.castShadow=mesh.receiveShadow=true;underStair.add(mesh);
+  return mesh;
+ };
+ cabinetPanel(cabinetStart,cabinetEnd,5.53,6.4,0,0,mOak).name='continuous-cabinet-carcass';
+ const sections=[1.32,1.82,2.32,2.82,3.32,3.82,4.42,5.02];
+ for(let i=0;i<sections.length-1;i++){
+  const a=sections[i]+.003,b=sections[i+1]-.003;
+  cabinetPanel(a,b,5.505,5.532,.016,.012,mDoorIn).name='sloping-cabinet-door';
+  const z=b-.085,y=Math.min(.96,cabinetTop(z)*.53);
+  addBox(underStair,5.482,Math.max(.025,y-.035),z-.009,5.506,y+.035,z+.009,mDark);
  }
  // Захист відкритого краю перекриття; вихід на майданчик зліва вільний.
  for(const z of [3.32,3.62,4.02])pipe(upper,[[5.48,0,z],[5.48,1,z]],.014,mDark);
@@ -1326,7 +1340,7 @@ function buildPlan(houseOnly=false){
    label(410,280,'СПАЛЬНЯ 2 · 9,89 м²',16);label(310,435,'ХОЛ',19);
    label(320,410,mirror?'ВИХІД →':'ВИХІД ←',13);
   }else{
-   box(-17,25,45,90,'#d1d8d8');box(-17,92,45,260,'#d1d8d8');box(125,125,265,210,'#d1b386');box(195,424,365,500,'#aeb6b7');box(280,335,365,380,'#d1b386');
+   box(-17,25,45,90,'#d1d8d8');box(-17,92,45,260,'#d1d8d8');box(125,125,265,210,'#d1b386');box(320,424,490,500,'#aeb6b7');box(390,335,475,380,'#d1b386');
    for(const x of [155,235])for(const z of [80,217])box(x-20,z,x+20,z+38,'#b6b1a6');
    label(585,285,'ШАФИ',13);
    label(330,260,'КУХНЯ-СТУДІЯ',22);label(330,232,'Відкрита зона',16);
