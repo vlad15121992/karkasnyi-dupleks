@@ -1000,12 +1000,13 @@ function buildSection(mirror,originX){
   bx(-.4,4.2,-0.15,-0.08,-2.01,-1.96,mDark);
   for(let z=-1.96;z<0;z+=.14) bx(-.4,4.2,-.023,-.019,z,z+.004,mTimber,false);
   { // садові меблі
-    const [cx] = X(2.2,2.2);
+    // Комплект зміщено до зовнішнього краю секції; панорамне скління 2,40–3,90 м вільне.
+    const [cx] = X(1.05,1.05);
     addMesh(g, new THREE.CylinderGeometry(0.36,0.36,0.03,22), mOak, cx, 0.55, -1.0);
     for (const [dx,dz] of [[-.2,-.16],[.2,-.16],[0,.2]])
       addBox(g,cx+dx-.025,-.02,-1+dz-.025,cx+dx+.025,.54,-1+dz+.025,mOak);
     for (const dx of [-0.75, 0.75]){
-      const [ax] = X(2.2+dx, 2.2+dx);
+      const [ax] = X(cx+dx, cx+dx);
       const chair=new THREE.Group(); chair.name='summer-armchair'; g.add(chair);
       for(const dx of [-.27,.27]) for(const z of [-1.32,-.76])
         addBox(chair,ax+dx-.025,-.02,z-.025,ax+dx+.025,.48,z+.025,mOak);
@@ -1196,7 +1197,7 @@ function standingMan(){
 }
 function seatedWoman(){
   const p=new THREE.Group();p.name='woman-seated-right-terrace';
-  p.position.set(11.55,-.02,-.98);p.rotation.y=Math.PI;model.add(p);
+  p.position.set(12.70,-.02,-.98);p.rotation.y=Math.PI;model.add(p);
   addBox(p,-.22,.47,-.13,.22,.63,.14,mWomanPants);
   softBox(p,0,.91,-.02,.44,.62,.25,mWomanTop,.08);
   for(const x of [-.14,.14]){
