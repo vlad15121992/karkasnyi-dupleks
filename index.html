@@ -757,9 +757,10 @@ function buildSection(mirror,originX){
  addBox(entry,4.4,0,-1.8,6.4,.014,.2,mTile,false);
  const vestibuleHeight=z=>2.51+(z+1.05)*.28/2.30;
  wallX(entry,4.2,6.4,-1.90,vestibuleHeight(-2),.2,mExt,[{a:5.4,b:6.2,y0:0,y1:2.05}]);
+ // Бічні площини тамбура мають те саме тепле дерев'яне оздоблення, що й передній фасад.
  for(const [x,t]of[[4.2,.2],[6.4,.1]]){
   const shape=new THREE.Shape([new THREE.Vector2(-2,0),new THREE.Vector2(0,0),new THREE.Vector2(0,vestibuleHeight(0)),new THREE.Vector2(-2,vestibuleHeight(-2))]);
-  const wall=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:t,bevelEnabled:false}),mExt);
+  const wall=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:t,bevelEnabled:false}),mTimber);
   wall.rotation.y=-Math.PI/2;wall.position.x=x+t;wall.castShadow=wall.receiveShadow=true;entry.add(wall);
  }
  const entryCeiling=new THREE.Mesh(new THREE.BoxGeometry(2,.025,Math.hypot(1.8,.28/2.3*1.8)),mWhite);
@@ -1267,9 +1268,9 @@ roofGroup.add(terraceCanopy);
   addMesh(terraceCanopy,new THREE.CylinderGeometry(.065,.065,14.3,16),mRib,6.5,2.36,-2.21,0,0,Math.PI/2);
   for(const x of [-.37,13.37]) addMesh(terraceCanopy,new THREE.CylinderGeometry(.045,.045,2.48,12),mRib,x,1.08,-2.13);
 
-  // Передня балка та п'ять стійок; центральні входи залишаються вільними.
+  // Передня балка та три стійки: лише дві крайні й центральна між секціями.
   addBox(terraceCanopy, -0.36,2.32,-1.98, 13.36,2.46,-1.84, mDark);
-  for (const x of [-0.30, 3.25, 6.50, 9.75, 13.30]) {
+  for (const x of [-0.30, 6.50, 13.30]) {
     const post = addBox(terraceCanopy, x-0.06,-0.02,-1.97,
       x+0.06,2.34,-1.85, mDark);
     post.name = 'terrace-post';
