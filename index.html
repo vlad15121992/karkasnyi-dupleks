@@ -843,16 +843,31 @@ function buildSection(mirror,originX){
  addBox(kitchen,.23,1.75,1.84,.86,1.85,2.42,mDark);addBox(kitchen,.25,1.85,2,.5,H,2.25,mDark);
  const extraCabinet=new THREE.Group();extraCabinet.name='kitchen-extra-cabinet';kitchen.add(extraCabinet);
  addBox(extraCabinet,.23,.08,2.61,.85,.85,3.55,mWhite);addBox(extraCabinet,.22,.85,2.61,.88,.9,3.56,mOak);
- for(const y of [.11,.35,.59]){addBox(extraCabinet,.851,y,2.635,.87,y+.215,2.985,mDoorIn);addBox(extraCabinet,.87,y+.14,2.72,.892,y+.17,2.9,mDark);}
  const corner=new THREE.Group();corner.name='l-shaped-kitchen-return';kitchen.add(corner);
  addBox(corner,.85,.08,3.0,2.10,.85,3.55,mWhite);addBox(corner,.88,.85,2.98,2.12,.90,3.56,mOak);
- for(const [a,b]of[[.87,1.47],[1.49,2.08]]){
-  addBox(corner,a,.10,2.977,b,.82,3.0,mDoorIn);addBox(corner,a+.12,.73,2.95,b-.12,.755,2.976,mDark);
+ // Єдиний кутовий модуль: дві складні стулки замість шухляд на стику.
+ const cornerDoors=new THREE.Group();cornerDoors.name='bifold-corner-doors';corner.add(cornerDoors);
+ addBox(cornerDoors,.851,.10,2.445,.875,.82,2.962,mDoorIn);
+ addBox(cornerDoors,.895,.10,2.975,1.44,.82,3.0,mDoorIn);
+ for(const y of [.23,.68]){
+  addBox(cornerDoors,.876,y,2.448,.884,y+.055,2.465,mMetal);
+  addBox(cornerDoors,.879,y,2.964,.897,y+.055,2.978,mMetal);
  }
- // Мийка та місце для посудомийної машини 60 см на короткому плечі.
- addBox(corner,1.52,.902,3.07,2.03,.915,3.47,mMetal);addBox(corner,1.56,.916,3.11,1.99,.921,3.42,mDark);
- pipe(corner,[[1.77,.91,3.50],[1.77,1.17,3.50],[1.77,1.17,3.28],[1.77,1.04,3.28]],.015,mDark);
- addBox(corner,.9,.75,2.945,1.44,.80,2.969,mMetal);
+ addBox(cornerDoors,1.37,.52,2.947,1.393,.72,2.974,mDark);
+ // Добір 7 см відокремлює складний фасад від торцевих шухляд.
+ addBox(corner,1.445,.08,2.975,1.515,.85,3.0,mWhite);
+ const endDrawers=new THREE.Group();endDrawers.name='kitchen-end-drawers';corner.add(endDrawers);
+ for(const [y,h]of[[.10,.20],[.32,.23],[.57,.25]]){
+  addBox(endDrawers,1.525,y,2.975,2.08,y+h,3.0,mDoorIn);
+  addBox(endDrawers,1.65,y+h-.075,2.945,1.955,y+h-.05,2.974,mDark);
+ }
+ // Діагональна мийка над кутовим модулем; торцева стільниця вільна.
+ const sink=new THREE.Group();sink.name='diagonal-corner-sink';sink.position.set(.75,0,3.22);sink.rotation.y=Math.PI/4;corner.add(sink);
+ addBox(sink,-.25,.902,-.18,.25,.919,.18,mMetal);
+ addBox(sink,-.218,.920,-.148,.218,.925,.148,mDark);
+ for(const [x,z,a,b]of[[-.25,-.18,.25,-.16],[-.25,.16,.25,.18],[-.25,-.16,-.23,.16],[.23,-.16,.25,.16]])addBox(sink,x,.919,z,a,.944,b,mMetal);
+ addMesh(sink,new THREE.CylinderGeometry(.021,.021,.004,16),mMetal,0,.928,0);
+ pipe(corner,[[.48,.91,3.43],[.48,1.20,3.43],[.69,1.20,3.25],[.69,1.07,3.25]],.015,mDark);
  // Духовка під варильною панеллю: скло, ручка та органи керування.
  addBox(kitchen,.872,.24,1.92,.88,.59,2.34,mGlass);addBox(kitchen,.88,.64,1.94,.918,.668,2.32,mMetal);
  for(const z of [1.98,2.26])addMesh(kitchen,new THREE.SphereGeometry(.025,12,8),mMetal,.89,.75,z);
@@ -1456,7 +1471,8 @@ function buildPlan(houseOnly=false){
    label(320,410,mirror?'ВИХІД →':'ВИХІД ←',13);
   }else{
    box(-17,25,45,90,'#d1d8d8');box(-17,92,45,355,'#d1d8d8');box(45,300,170,355,'#d1d8d8');
-   box(-7,186,37,240,'#555');box(112,307,163,347,'#889da1');
+   box(-7,186,37,240,'#555');box(112.5,300,168,355,'#d1d8d8');
+   {const [sx]=X(35,35);s+=`<rect x="${sx-25}" y="${Y(322)-18}" width="50" height="36" rx="3" fill="#889da1" stroke="#666" stroke-width="2" transform="rotate(${mirror?-45:45} ${sx} ${Y(322)})"/>`;}
    box(170,105,310,190,'#d1b386');box(320,424,490,500,'#aeb6b7');box(352.5,333.5,457.5,388.5,'#d1b386');
    for(const x of [200,280])for(const z of [60,197])box(x-20,z,x+20,z+38,'#b6b1a6');
    box(420,-200,650,0,'#e6ded0');
