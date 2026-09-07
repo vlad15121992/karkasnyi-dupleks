@@ -164,7 +164,8 @@ ul.tech li::before{content:"";position:absolute;left:16px;top:20px;width:6px;hei
 .gal figure{background:#fff;position:relative}
 .gal figure.full{grid-column:1/-1}
 .gal img{width:100%;height:auto;display:block;filter:saturate(.96)}
-.gal figure.pair img{aspect-ratio:4/3;object-fit:cover}
+.gal figure.full img{background:#fff;object-fit:contain}
+.gal figure.pair img{aspect-ratio:1/1;object-fit:cover}
 .gal figcaption{
   display:flex;justify-content:space-between;gap:14px;padding:13px 16px;border-top:1px solid var(--line);
   font-size:11px;letter-spacing:.1em;text-transform:uppercase;
@@ -282,36 +283,44 @@ footer .frow b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-num
     <div class="blk-head">
       <div class="sq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <h2>02 / Візуалізація</h2>
-      <p>Актуальний зовнішній вигляд двоповерхового дуплекса та ділянки. Нижче збережені референси оздоблення попереднього одноповерхового варіанта.</p>
+      <p>Актуальні фотореалістичні зображення фасаду, ділянки та приміщень обох секцій.</p>
     </div>
     <div class="gal">
       <figure class="full">
-        <img src="assets/visual-current-exterior-v2.png" alt="Фотореалістична візуалізація двоповерхового дуплекса з відкритими терасами, парковкою, доріжками та двома зонами барбекю" loading="lazy">
-        <figcaption><span>Актуальний дуплекс · будинок і благоустрій ділянки</span><em>фотореалістична візуалізація</em></figcaption>
-      </figure>
-      <figure class="full">
-        <img src="assets/visual-facade.png" alt="Головний фасад одноповерхового дуплекса з накритою терасою" loading="lazy">
-        <figcaption><span>Головний фасад · накрита тераса на всю довжину</span><em>затверджений дизайн</em></figcaption>
-      </figure>
-      <figure class="full">
-        <img src="assets/visual-site-aerial.png" alt="Дуплекс на ділянці з парковкою, проїздом і двома зонами барбекю" loading="lazy">
-        <figcaption><span>Ділянка · будинок, парковка та дві BBQ-зони</span><em>вид зверху</em></figcaption>
+        <img src="assets/visual-main-facade.png" alt="Головний фасад двоповерхового дуплекса на білому фоні" loading="lazy">
+        <figcaption><span>Головний фасад · актуальний варіант</span><em>1-й поверх + мансарда</em></figcaption>
       </figure>
       <figure class="pair">
-        <img src="assets/visual-hall-kitchen.png" alt="Світла прихожа, відкрита до кухні та обідньої зони" loading="lazy">
-        <figcaption><span>Прихожа та кухня · єдиний світлий простір</span><em>5,70 + 8,99 м²</em></figcaption>
+        <img src="assets/visual-site.png" alt="Дуплекс на ділянці з парковкою, пішохідними доріжками та двома зонами барбекю" loading="lazy">
+        <figcaption><span>Ділянка · парковка, доріжки та дві BBQ-зони</span><em>загальний вигляд</em></figcaption>
       </figure>
       <figure class="pair">
-        <img src="assets/visual-bedroom.png" alt="Спальня з ліжком під вікном і шафою-купе" loading="lazy">
-        <figcaption><span>Спальня · ліжко 1600 під вікном і шафа-купе</span><em>7,56 м²</em></figcaption>
+        <img src="assets/visual-kitchen.png" alt="Світла кутова кухня з повним комплектом техніки та обіднім столом на чотири особи" loading="lazy">
+        <figcaption><span>Кутова кухня-студія · повне оснащення</span><em>1-й поверх</em></figcaption>
       </figure>
       <figure class="pair">
-        <img src="assets/visual-kitchen-to-hall.png" alt="Вигляд із кухні на прихожу, вхід і терасу" loading="lazy">
-        <figcaption><span>Кухня → прихожа · вхід і вихід на терасу</span><em>зворотний ракурс</em></figcaption>
+        <img src="assets/visual-living-stairs.png" alt="Вітальня з диваном, журнальним столиком і суцільними секційними шафами під сходами" loading="lazy">
+        <figcaption><span>Вітальня та сходи · шафи під маршем</span><em>1-й поверх</em></figcaption>
       </figure>
       <figure class="pair">
-        <img src="assets/visual-bathroom.png" alt="Санвузол із душовою, унітазом, умивальником і пральною машиною" loading="lazy">
-        <figcaption><span>Санвузол · душова, унітаз, умивальник і пральна машина</span><em>4,71 м²</em></figcaption>
+        <img src="assets/visual-vestibule.png" alt="Тамбур-прихожа з лавкою для взуття та панеллю з вішалками" loading="lazy">
+        <figcaption><span>Тамбур-прихожа · лавка та вішалки</span><em>1-й поверх</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-bedroom-single.png" alt="Світла спальня з односпальним ліжком, шафою та приліжковою тумбою" loading="lazy">
+        <figcaption><span>Спальня 1 · односпальне ліжко та шафа</span><em>мансарда</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-bedroom-double.png" alt="Світла спальня з двоспальним ліжком, шафою та приліжковою тумбою" loading="lazy">
+        <figcaption><span>Спальня 2 · двоспальне ліжко та шафа</span><em>мансарда</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-wc-ground.png" alt="Компактний гостьовий санвузол з умивальником, дзеркалом і унітазом" loading="lazy">
+        <figcaption><span>Гостьовий санвузол · умивальник та унітаз</span><em>1-й поверх</em></figcaption>
+      </figure>
+      <figure class="pair">
+        <img src="assets/visual-bath-upper.png" alt="Санвузол з душовою кабіною, умивальником, дзеркалом і унітазом" loading="lazy">
+        <figcaption><span>Санвузол із душовою</span><em>мансарда</em></figcaption>
       </figure>
     </div>
   </section>
