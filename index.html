@@ -1021,6 +1021,29 @@ function seatedWoman(){
 }
 standingMan();
 seatedWoman();
+// Фігури для оцінки висоти проходу: зріст від підошви до маківки — рівно 1,90 м.
+function stairScalePerson(section,step,shirt){
+  const p=new THREE.Group(),body=new THREE.Group();p.add(body);
+  p.name=`stair-person-${step}`;p.userData={height:1.9,step};
+  for(const x of [-.12,.12]){
+    softBox(body,x,.035,0,.17,.07,.26,mDark,.02);
+    limb(body,[x,.08,0],[x,.88,0],.065,mManPants);
+  }
+  addBox(body,-.20,.77,-.105,.20,.99,.105,mManPants);
+  softBox(body,0,1.26,0,.46,.62,.24,shirt,.065);
+  for(const side of [-1,1]){
+    limb(body,[side*.25,1.43,0],[side*.28,1.13,0],.05,shirt);
+    limb(body,[side*.28,1.13,0],[side*.26,.91,.025],.038,mSkin);
+  }
+  limb(body,[0,1.51,0],[0,1.62,0],.065,mSkin);head(body,1.72);
+  body.updateMatrixWorld(true);
+  const bounds=new THREE.Box3().setFromObject(body),scale=1.9/(bounds.max.y-bounds.min.y);
+  body.scale.y=scale;body.position.y=-bounds.min.y*scale;
+  p.position.set(5.95,(UPPER/18)*step,1.22+(step-.5)*.28);
+  section.userData.lower.add(p);
+}
+const stairShirts=[std(0x426576,.9),std(0xb38659,.9),std(0x6c7960,.9)];
+for(const section of [gA,gB])for(let i=0;i<3;i++)stairScalePerson(section,6+i,stairShirts[i]);
 const siteGroup=new THREE.Group(); siteGroup.name='site-surroundings';
 for(const child of model.children.slice(siteStart)) if(child!==terraceDivider) siteGroup.add(child);
 model.add(siteGroup);
