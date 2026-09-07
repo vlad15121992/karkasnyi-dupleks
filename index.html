@@ -790,26 +790,43 @@ function buildSection(mirror,originX){
   addBox(bath,-.17,.13,4.10,.71,2.02,4.12,mGlass,false);
   pipe(bath,[[-.12,1.05,4.60],[-.12,1.95,4.60],[.13,1.95,4.60]],.018,mDark);
   addMesh(bath,new THREE.CylinderGeometry(.10,.10,.025,24),mDark,.13,1.94,4.60);
-  softBox(bath,1.18,.25,4.57,.40,.34,.60,mCeram,.08);
-  addBox(bath,.96,.12,4.80,1.40,.85,5.0,mCeram);
-  addMesh(bath,new THREE.TorusGeometry(.15,.025,10,30),mCeram,1.18,.43,4.48,Math.PI/2);
-  addBox(bath,-.15,.25,3.37,.50,.79,3.89,mOak);
-  addBox(bath,-.17,.79,3.35,.52,.84,3.91,mCeram);
-  addBox(bath,-.02,.835,3.45,.37,.847,3.79,mWater,false);
-  pipe(bath,[[.34,.84,3.43],[.34,1.08,3.43],[.18,1.08,3.43],[.18,.98,3.43]],.015,mDark);
-  addBox(bath,-.12,1.12,3.323,.48,1.86,3.35,mMirror,false);
+  const toilet=new THREE.Group();toilet.name='toilet-near-side-wall';bath.add(toilet);
+  softBox(toilet,1.42,.25,4.57,.40,.34,.60,mCeram,.08);
+  addBox(toilet,1.20,.12,4.80,1.64,.85,5.0,mCeram);
+  addMesh(toilet,new THREE.TorusGeometry(.15,.025,10,30),mCeram,1.42,.43,4.48,Math.PI/2);
+  // Умивальник шириною 55 см на зовнішній стіні, навпроти дверей.
+  const vanity=new THREE.Group();vanity.name='vanity-facing-entrance';bath.add(vanity);
+  addBox(vanity,-.17,.23,3.45,.28,.77,4.0,mOak);
+  for(const y of [.26,.51]){addBox(vanity,.28,y,3.47,.30,y+.23,3.98,mDoorIn);addBox(vanity,.30,y+.16,3.65,.325,y+.185,3.81,mDark);}
+  addBox(vanity,-.18,.77,3.44,.30,.805,4.01,mCeram);
+  addBox(vanity,-.16,.805,3.46,.28,.88,3.49,mCeram);addBox(vanity,-.16,.805,3.96,.28,.88,3.99,mCeram);
+  addBox(vanity,-.16,.805,3.49,-.13,.88,3.96,mCeram);addBox(vanity,.25,.805,3.49,.28,.88,3.96,mCeram);
+  addMesh(vanity,new THREE.CylinderGeometry(.018,.018,.004,16),mMetal,.08,.808,3.72);
+  pipe(vanity,[[-.10,.88,3.72],[-.10,1.09,3.72],[.09,1.09,3.72],[.09,.99,3.72]],.015,mDark);
+  addBox(vanity,-.195,1.12,3.45,-.17,1.87,4.0,mDark);addBox(vanity,-.169,1.14,3.47,-.163,1.85,3.98,mMirror,false);
  };
  rearBath(lower);
  // Кухня біля зовнішньої стіни; місце перед входом і сходами вільне.
  const kitchen=new THREE.Group();kitchen.position.x=-.4;lower.add(kitchen);
- addBox(kitchen,.23,0,.25,.85,2.12,.88,mWhite);
+ const fridge=new THREE.Group();fridge.name='detailed-fridge';kitchen.add(fridge);
+ softBox(fridge,.54,1.04,.565,.62,2.08,.63,mWhite,.025);
+ addBox(fridge,.851,.09,.27,.877,.66,.86,mWhite);addBox(fridge,.851,.685,.27,.877,2.055,.86,mWhite);
+ addBox(fridge,.856,.662,.27,.879,.681,.86,mDark);
+ for(const [a,b]of[[.36,.55],[1.04,1.49]])pipe(fridge,[[.879,a,.79],[.92,a,.79],[.92,b,.79],[.879,b,.79]],.014,mMetal);
+ addBox(fridge,.852,.02,.29,.87,.065,.84,mDark);
  addBox(kitchen,.23,0,.92,.85,.85,2.60,mWhite);addBox(kitchen,.22,.85,.91,.88,.9,2.61,mOak);
  addBox(kitchen,.34,.90,1.0,.75,.915,1.48,mMetal);pipe(kitchen,[[.28,.91,1.2],[.28,1.2,1.2],[.52,1.2,1.2],[.52,1.06,1.2]],.015,mDark);
  addBox(kitchen,.33,.9,1.86,.77,.925,2.4,mDark);addBox(kitchen,.85,.12,1.86,.87,.72,2.4,mDark);
  addBox(kitchen,.23,1.75,1.84,.86,1.85,2.42,mDark);addBox(kitchen,.25,1.85,2,.5,H,2.25,mDark);
+ const extraCabinet=new THREE.Group();extraCabinet.name='kitchen-extra-cabinet';kitchen.add(extraCabinet);
+ addBox(extraCabinet,.23,.08,2.61,.85,.85,3.20,mWhite);addBox(extraCabinet,.22,.85,2.61,.88,.9,3.21,mOak);
+ for(const y of [.11,.35,.59]){addBox(extraCabinet,.851,y,2.635,.87,y+.215,3.175,mDoorIn);addBox(extraCabinet,.87,y+.14,2.82,.892,y+.17,3.0,mDark);}
  const lounge=new THREE.Group();lounge.name='lounge-by-rear-window';lower.add(lounge);
  addBox(lounge,3.20,0,4.24,4.90,.43,5.0,mSofa);addBox(lounge,3.20,.43,4.82,4.90,.95,5.0,mSofa);
- addBox(lounge,3.90,.32,3.35,4.75,.38,3.80,mOak);
+ const coffee=new THREE.Group();coffee.name='centered-coffee-table';lounge.add(coffee);
+ softBox(coffee,4.05,.405,3.61,1.05,.05,.55,mOak,.025);
+ for(const x of [3.64,4.46])for(const z of [3.43,3.79])addBox(coffee,x-.025,0,z-.025,x+.025,.385,z+.025,mDark);
+ addBox(coffee,3.63,.10,3.43,4.47,.125,3.79,mOak);
  addBox(lower,1.25,.72,1.25,2.65,.78,2.10,mOak);
  for(const x of [1.32,2.58])for(const z of [1.32,2.03])addBox(lower,x-.025,0,z-.025,x+.025,.72,z+.025,mOak);
  for(const x of [1.55,2.35]){addBox(lower,x-.2,.43,2.17,x+.2,.49,2.55,mLinen);addBox(lower,x-.2,.48,2.50,x+.2,.95,2.57,mOak);}
@@ -875,13 +892,20 @@ function buildSection(mirror,originX){
  // Спальня 1: односпальне 90×200, тумба та односекційна шафа.
  addBox(upper,.05,.08,.40,.99,.28,2.44,mOak);softBox(upper,.52,.39,1.42,.90,.23,2,mMatr,.05);
  addBox(upper,.03,.12,.30,1.01,.95,.42,mLinen);softBox(upper,.52,.55,.72,.65,.13,.40,mWhite,.04);
- addBox(upper,1.09,0,.4,1.54,.50,.85,mOak);
+ const nightstand=(x,z)=>{
+  const n=new THREE.Group();n.name='bedside-table';upper.add(n);
+  addBox(n,x,.05,z,x+.42,.48,z+.40,mOak);
+  for(const y of [.08,.28]){addBox(n,x+.02,y,z+.401,x+.40,y+.17,z+.418,mDoorIn);addBox(n,x+.14,y+.10,z+.418,x+.28,y+.12,z+.44,mDark);}
+  for(const dx of [.035,.385])for(const dz of [.035,.365])addBox(n,x+dx-.015,0,z+dz-.015,x+dx+.015,.06,z+dz+.015,mDark);
+ };
+ nightstand(1.09,.44);
  addBox(upper,2.05,0,1.4,2.65,2.15,2.2,mOak);addBox(upper,2.035,.04,1.42,2.055,2.11,2.18,mDoorIn);
  addBox(upper,2.02,.9,2.06,2.036,1.2,2.085,mDark);
  // Спальня 2: двоспальне 140×200 та шафа у ніші над сходами.
  addBox(upper,3.38,.08,.40,4.82,.28,2.44,mOak);softBox(upper,4.1,.39,1.42,1.4,.23,2,mMatr,.05);
  addBox(upper,3.36,.12,.30,4.84,.98,.42,mLinen);
  for(const x of [3.75,4.45])softBox(upper,x,.55,.72,.58,.13,.40,mWhite,.04);
+ nightstand(2.87,.44);
  const niche=new THREE.Group();niche.name='wardrobe-above-fourth-step';upper.add(niche);
  addBox(niche,5.77,0,.45,6.37,2.2,2.15,mOak);
  for(const [a,b]of[[.47,1.29],[1.31,2.13]]){addBox(niche,5.75,.04,a,5.77,2.16,b,mDoorIn);addBox(niche,5.73,.90,b-.09,5.751,1.22,b-.07,mDark);}
@@ -990,6 +1014,13 @@ fenceRun(14.1,-2.71, 14.1,-34.51);    // східна межа — пряма д
 addBox(model, 11.47,-0.155,-34.51, 14.10,-0.14,-20.91, mPave, false); // шия 2,63 × 13,60
 addBox(model, 10.48,-0.155,-20.91, 14.10,-0.14,-9.0, mPave, false);   // в'їзд уздовж східної межі
 addBox(model, 5.02,-0.155,-14.9, 10.48,-0.14,-9.0, mPave, false);     // парковка
+ // Дві суцільні пішохідні доріжки від краю парковки до вхідних сходинок.
+ const entryPaths=new THREE.Group();entryPaths.name='parking-to-entry-paths';model.add(entryPaths);
+ for(const x of [5.25,6.65]){
+  addBox(entryPaths,x-.04,-.18,-9.04,x+1.14,-.145,-2.39,mSlab,false);
+  addBox(entryPaths,x,-.155,-9.04,x+1.10,-.14,-2.39,mPave,false);
+  for(const edge of [x-.04,x+1.10])addBox(entryPaths,edge,-.155,-9.04,edge+.04,-.135,-2.39,mRib,false);
+ }
 const mCar = std(0x3f454d, 0.35, 0.7);
 const mCar2 = std(0xe3e5e6, 0.28, 0.4);
 const mCarGlass = std(0x263b48, 0.18, 0.55);
@@ -1300,6 +1331,7 @@ function buildPlan(houseOnly=false){
  const upper=currentFloor==='upper';
   /* межа ділянки за кад. планом 15,2 × 40,43: схід прямий, захід — східцями; шия 2,63 з воротами */
   if(!houseOnly){
+  for(const x of [525,665]){s+=rect(x-4,-904,x+114,-239,'#777b7c');s+=rect(x,-904,x+110,-239,'#deddd8');}
   const fc3 = '#2a2a2e';
   for(const x of [465,1275]){
     s += rect(x-92,-715,x+92,-465,'#deddd8');
@@ -1352,7 +1384,7 @@ function buildPlan(houseOnly=false){
   cur=-40;for(const [a,b]of [[75,155],[350,470],[640,640]]){lx(cur,a,512,20);if(b>a)lx(a,b,512,3);cur=b;}
   lz(-30,0,522,20);lz(645,0,522,10);
   box(-20,332,170,502,'#dce8e8');lx(-20,180,327);lz(175,332,345);lz(175,425,502);lz(175,345,425,3);
-  box(-17,410,73,500,'#bdd0d4');box(-15,337,50,389,'#c6af89');box(96,442,140,500,'#fff');
+  box(-17,410,73,500,'#bdd0d4');box(-17,345,28,400,'#c6af89');box(120,442,164,500,'#fff');
   label(75,417,'САНВУЗОЛ',17);label(75,397,'1,90 × 1,70',15);label(75,375,'3,23 м²',16);
   box(550,122,640,492,'#e3d9ca');box(382,402,550,492,'#e3d9ca');
   for(let i=0;i<=10;i++)lx(550,640,122+i*28,2);
@@ -1365,12 +1397,12 @@ function buildPlan(houseOnly=false){
    lz(275,20,332);lx(-20,180,327);lx(260,270,327);lx(180,260,327,3);
    lx(280,300,327);lx(380,540,327);lx(300,380,327,3);
    box(5,40,99,244,'#d5c5ab');box(15,47,89,92,'#fff');box(109,40,154,85,'#b7a386');box(205,140,265,220,'#b7a386');
-   box(338,40,482,244,'#d5c5ab');box(345,47,405,92,'#fff');box(415,47,475,92,'#fff');box(577,45,637,215,'#b7a386');
+   box(338,40,482,244,'#d5c5ab');box(345,47,405,92,'#fff');box(415,47,475,92,'#fff');box(577,45,637,215,'#b7a386');box(287,44,329,84,'#b7a386');
    label(125,280,'СПАЛЬНЯ 1 · 8,76 м²',16);
    label(410,280,'СПАЛЬНЯ 2 · 9,89 м²',16);label(310,435,'ХОЛ',19);
    label(320,410,mirror?'ВИХІД →':'ВИХІД ←',13);
   }else{
-   box(-17,25,45,90,'#d1d8d8');box(-17,92,45,260,'#d1d8d8');box(125,125,265,210,'#d1b386');box(320,424,490,500,'#aeb6b7');box(390,335,475,380,'#d1b386');
+   box(-17,25,45,90,'#d1d8d8');box(-17,92,45,320,'#d1d8d8');box(125,125,265,210,'#d1b386');box(320,424,490,500,'#aeb6b7');box(352.5,333.5,457.5,388.5,'#d1b386');
    for(const x of [155,235])for(const z of [80,217])box(x-20,z,x+20,z+38,'#b6b1a6');
    box(420,-200,650,0,'#e6ded0');
    lz(430,-200,0,20);lz(645,-200,0,10);
