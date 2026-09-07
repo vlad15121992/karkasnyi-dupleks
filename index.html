@@ -844,7 +844,10 @@ function buildSection(mirror,originX){
  const extraCabinet=new THREE.Group();extraCabinet.name='kitchen-extra-cabinet';kitchen.add(extraCabinet);
  addBox(extraCabinet,.23,.08,2.61,.85,.85,3.55,mWhite);addBox(extraCabinet,.22,.85,2.61,.88,.9,3.56,mOak);
  const corner=new THREE.Group();corner.name='l-shaped-kitchen-return';kitchen.add(corner);
- addBox(corner,.85,.08,3.0,2.10,.85,3.55,mWhite);addBox(corner,.88,.85,2.98,2.12,.90,3.56,mOak);
+ // Порожній корпус під чашею та справжній виріз у стільниці.
+ addBox(corner,.85,.08,3.0,2.10,.105,3.55,mWhite);addBox(corner,.85,.105,3.52,2.10,.85,3.55,mWhite);
+ addBox(corner,2.08,.105,3.0,2.10,.85,3.52,mWhite);
+ for(const [x,z,a,b]of[[.88,2.98,.94,3.56],[1.34,2.98,2.12,3.56],[.94,2.98,1.34,3.08],[.94,3.47,1.34,3.56]])addBox(corner,x,.85,z,a,.90,b,mOak);
  // Єдиний кутовий модуль: дві складні стулки замість шухляд на стику.
  const cornerDoors=new THREE.Group();cornerDoors.name='bifold-corner-doors';corner.add(cornerDoors);
  addBox(cornerDoors,.851,.10,2.445,.875,.82,2.962,mDoorIn);
@@ -861,13 +864,21 @@ function buildSection(mirror,originX){
   addBox(endDrawers,1.525,y,2.975,2.08,y+h,3.0,mDoorIn);
   addBox(endDrawers,1.65,y+h-.075,2.945,1.955,y+h-.05,2.974,mDark);
  }
- // Діагональна мийка над кутовим модулем; торцева стільниця вільна.
- const sink=new THREE.Group();sink.name='diagonal-corner-sink';sink.position.set(.75,0,3.22);sink.rotation.y=Math.PI/4;corner.add(sink);
- addBox(sink,-.25,.902,-.18,.25,.919,.18,mMetal);
- addBox(sink,-.218,.920,-.148,.218,.925,.148,mDark);
- for(const [x,z,a,b]of[[-.25,-.18,.25,-.16],[-.25,.16,.25,.18],[-.25,-.16,-.23,.16],[.23,-.16,.25,.16]])addBox(sink,x,.919,z,a,.944,b,mMetal);
- addMesh(sink,new THREE.CylinderGeometry(.021,.021,.004,16),mMetal,0,.928,0);
- pipe(corner,[[.48,.91,3.43],[.48,1.20,3.43],[.69,1.20,3.25],[.69,1.07,3.25]],.015,mDark);
+ // Прямокутна чорна мийка 85 × 48 см, паралельна короткому плечу.
+ const sink=new THREE.Group();sink.name='rectangular-sink-with-drainer';corner.add(sink);
+ const sinkMat=new THREE.MeshStandardMaterial({color:0x242626,roughness:.72,metalness:.12});
+ for(const [x,z,a,b]of[[.55,3.035,1.40,3.08],[.55,3.47,1.40,3.515],[.55,3.08,.94,3.47],[1.34,3.08,1.40,3.47]])addBox(sink,x,.902,z,a,.918,b,sinkMat);
+ // Чаша заглиблена на 20 см: дно, чотири стінки та металевий злив.
+ addBox(sink,.94,.70,3.08,1.34,.715,3.47,sinkMat);
+ for(const [x,z,a,b]of[[.94,3.08,.957,3.47],[1.323,3.08,1.34,3.47],[.957,3.08,1.323,3.097],[.957,3.453,1.323,3.47]])addBox(sink,x,.715,z,a,.918,b,sinkMat);
+ addMesh(sink,new THREE.CylinderGeometry(.035,.035,.004,24),mMetal,1.14,.718,3.275);
+ addMesh(sink,new THREE.TorusGeometry(.026,.003,8,24),mDark,1.14,.722,3.275,Math.PI/2);
+ // Ребра крила для сушіння.
+ for(const x of [.60,.66,.72,.78,.84,.90])addBox(sink,x,.918,3.105,x+.008,.922,3.445,sinkMat);
+ const tapPoints=[];tapPoints.push([.98,.92,3.49],[.98,1.09,3.49]);
+ for(let i=0;i<=20;i++){const t=Math.PI*i/20;tapPoints.push([.98,1.09+.11*Math.sin(t),3.38+.11*Math.cos(t)]);}
+ tapPoints.push([.98,1.045,3.27]);pipe(sink,tapPoints,.016,mDark);
+ addBox(sink,1.005,.96,3.475,1.065,.99,3.505,mDark);addBox(sink,1.05,.975,3.482,1.064,1.045,3.496,mDark);
  // Духовка під варильною панеллю: скло, ручка та органи керування.
  addBox(kitchen,.872,.24,1.92,.88,.59,2.34,mGlass);addBox(kitchen,.88,.64,1.94,.918,.668,2.32,mMetal);
  for(const z of [1.98,2.26])addMesh(kitchen,new THREE.SphereGeometry(.025,12,8),mMetal,.89,.75,z);
@@ -1472,7 +1483,8 @@ function buildPlan(houseOnly=false){
   }else{
    box(-17,25,45,90,'#d1d8d8');box(-17,92,45,355,'#d1d8d8');box(45,300,170,355,'#d1d8d8');
    box(-7,186,37,240,'#555');box(112.5,300,168,355,'#d1d8d8');
-   {const [sx]=X(35,35);s+=`<rect x="${sx-25}" y="${Y(322)-18}" width="50" height="36" rx="3" fill="#889da1" stroke="#666" stroke-width="2" transform="rotate(${mirror?-45:45} ${sx} ${Y(322)})"/>`;}
+   box(15,303.5,100,351.5,'#363939');box(54,308,94,347,'#171919');
+   for(const x of [20,26,32,38,44,50])box(x,310.5,x+.8,344.5,'#626565');
    box(170,105,310,190,'#d1b386');box(320,424,490,500,'#aeb6b7');box(352.5,333.5,457.5,388.5,'#d1b386');
    for(const x of [200,280])for(const z of [60,197])box(x-20,z,x+20,z+38,'#b6b1a6');
    box(420,-200,650,0,'#e6ded0');
